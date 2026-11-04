@@ -818,34 +818,6 @@ $inputXML = @"
 
                         <Border Style="{StaticResource PathCard}">
                             <StackPanel>
-                                <Border Background="#E67E22" CornerRadius="12,12,0,0" Padding="15,10">
-                                    <TextBlock Text="FS1 Profiles" FontWeight="Bold" Foreground="White"/>
-                                </Border>
-                                <Border Padding="15">
-                                    <StackPanel>
-                                        <TextBox Text="\\gflctxfs1\userprofiles$" IsReadOnly="True" BorderThickness="0" Background="Transparent" FontSize="11" Foreground="#444" TextWrapping="Wrap" Height="40"/>
-                                        <Button Name="btnOpenFS1" Content="Open in Explorer" Tag="\\gflctxfs1\userprofiles$"/>
-                                    </StackPanel>
-                                </Border>
-                            </StackPanel>
-                        </Border>
-
-                        <Border Style="{StaticResource PathCard}">
-                            <StackPanel>
-                                <Border Background="#343A40" CornerRadius="12,12,0,0" Padding="15,10">
-                                    <TextBlock Text="FS4 Profiles" FontWeight="Bold" Foreground="White"/>
-                                </Border>
-                                <Border Padding="15">
-                                    <StackPanel>
-                                        <TextBox Text="\\gflctxfs4\userprofiles$" IsReadOnly="True" BorderThickness="0" Background="Transparent" FontSize="11" Foreground="#444" TextWrapping="Wrap" Height="40"/>
-                                        <Button Name="btnOpenFS4" Content="Open in Explorer" Tag="\\gflctxfs4\userprofiles$"/>
-                                    </StackPanel>
-                                </Border>
-                            </StackPanel>
-                        </Border>
-
-                        <Border Style="{StaticResource PathCard}">
-                            <StackPanel>
                                 <Border Background="#2ECC71" CornerRadius="12,12,0,0" Padding="15,10">
                                     <TextBlock Text="AWS Profiles" FontWeight="Bold" Foreground="White"/>
                                 </Border>
@@ -2815,7 +2787,7 @@ $fnOpenPath = {
     } @{ Button = $btn; Path = $path }
 }
 
-@($btnOpenSDrive, $btnOpenKDrive, $btnOpenZDrive, $btnOpenFS1, $btnOpenFS4, $btnOpenAWS, $btnOpenLRS, $btnOpenPAFE, $btnOpenWallpaper) | ForEach-Object {
+@($btnOpenSDrive, $btnOpenKDrive, $btnOpenZDrive, $btnOpenAWS, $btnOpenLRS, $btnOpenPAFE, $btnOpenWallpaper) | ForEach-Object {
     if ($_) { $_.Add_Click($fnOpenPath) }
 }
 
