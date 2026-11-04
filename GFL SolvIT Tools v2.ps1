@@ -1,6 +1,9 @@
 ﻿Add-Type -AssemblyName PresentationFramework, PresentationCore, WindowsBase
 Add-Type -AssemblyName Microsoft.VisualBasic
 
+# Shown at the bottom of the side menu - update when releasing a new version
+$script:AppVersionDate = "09/09/2026"
+
 $inputXML = @"
 <Window xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
@@ -69,7 +72,7 @@ $inputXML = @"
                 <StackPanel Grid.Row="2">
                     <Border Height="1" Background="#3E3E42" Margin="15,0,15,8"/>
 
-                    <TextBlock Name="txtVersion" Text="Version 2.0.0" FontSize="10" Foreground="Gray" HorizontalAlignment="Left" Margin="20,8,0,10" />
+                    <TextBlock Name="txtVersion" Text="" FontSize="10" Foreground="Gray" HorizontalAlignment="Left" Margin="20,8,0,10" />
                 </StackPanel>
             </Grid>
         </Border>
@@ -92,7 +95,7 @@ $inputXML = @"
                         <Button Name="btnsearchLaps" Content="Search" Margin="10,0" Width="100" Height="35" Background="#007ACC" Foreground="White">
                             <Button.Resources><Style TargetType="Border"><Setter Property="CornerRadius" Value="5"/></Style></Button.Resources>
                         </Button>
-                        <TextBlock Name="lblLapsError" Text="? Asset Tag not found!" Foreground="#D13438" FontSize="12" FontWeight="SemiBold" Margin="25,0,0,0" Visibility="Collapsed" VerticalAlignment="Center"/>
+                        <TextBlock Name="lblLapsError" Text="Asset Tag not found!" TextWrapping="Wrap" MaxWidth="400" Foreground="#D13438" FontSize="12" FontWeight="SemiBold" Margin="25,0,0,0" Visibility="Collapsed" VerticalAlignment="Center"/>
                     </StackPanel>
                 </Border>
 
@@ -187,7 +190,7 @@ $inputXML = @"
                         <Button Name="btnsearchUser" Content="Search" Margin="10,0" Width="100" Height="35" Background="#007ACC" Foreground="White">
                             <Button.Resources><Style TargetType="Border"><Setter Property="CornerRadius" Value="5"/></Style></Button.Resources>
                         </Button>
-                        <TextBlock Name="lblUserError" Text="? User not found!" Foreground="#D13438" FontSize="12" FontWeight="SemiBold" Margin="25,0,0,0" Visibility="Collapsed" VerticalAlignment="Center"/>
+                        <TextBlock Name="lblUserError" Text="User not found!" TextWrapping="Wrap" MaxWidth="400" Foreground="#D13438" FontSize="12" FontWeight="SemiBold" Margin="25,0,0,0" Visibility="Collapsed" VerticalAlignment="Center"/>
                     </StackPanel>
                 </Border>
 
@@ -211,7 +214,7 @@ $inputXML = @"
                             <StackPanel>
                                 <StackPanel Orientation="Horizontal" Margin="0,0,0,20">
                                     <Border Width="50" Height="50" CornerRadius="25" Background="#007ACC" Margin="0,0,15,0">
-                                        <TextBlock Text="??" Foreground="White" FontSize="24" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                        <TextBlock Text="&#xE77B;" FontFamily="Segoe MDL2 Assets" Foreground="White" FontSize="24" HorizontalAlignment="Center" VerticalAlignment="Center"/>
                                     </Border>
                                     <StackPanel VerticalAlignment="Center">
                                         <TextBox Name="lblUserName" Text="User Name" IsReadOnly="True" FontSize="18" FontWeight="Bold" BorderThickness="0" Background="Transparent"/>
@@ -339,7 +342,7 @@ $inputXML = @"
                                         <Button.Resources><Style TargetType="Border"><Setter Property="CornerRadius" Value="5"/></Style></Button.Resources>
                                     </Button>
                                 </StackPanel>
-                                <TextBlock Name="lblGroupActionError" Text="? Error" Foreground="#D13438" FontSize="12" FontWeight="SemiBold" Margin="0,0,0,10" Visibility="Collapsed"/>
+                                <TextBlock Name="lblGroupActionError" Text="Error" TextWrapping="Wrap" Foreground="#D13438" FontSize="12" FontWeight="SemiBold" Margin="0,0,0,10" Visibility="Collapsed"/>
                                 <ListView Name="listUserGroups" Height="270" BorderBrush="#E5E5E5">
                                     <ListView.View>
                                         <GridView>
@@ -600,7 +603,7 @@ $inputXML = @"
                         <Button Name="btnSearchPrinterCard" Content="Search" Margin="10,0" Width="100" Height="35" Background="#007ACC" Foreground="White">
                             <Button.Resources><Style TargetType="Border"><Setter Property="CornerRadius" Value="5"/></Style></Button.Resources>
                         </Button>
-                        <TextBlock Name="lblPrinterCardError" Text="? Printer Card not found!" Foreground="#D13438" FontSize="12" FontWeight="SemiBold" Margin="25,0,0,0" Visibility="Collapsed" VerticalAlignment="Center"/>
+                        <TextBlock Name="lblPrinterCardError" Text="Printer Card not found!" TextWrapping="Wrap" MaxWidth="400" Foreground="#D13438" FontSize="12" FontWeight="SemiBold" Margin="25,0,0,0" Visibility="Collapsed" VerticalAlignment="Center"/>
                     </StackPanel>
                 </Border>
 
@@ -677,7 +680,7 @@ $inputXML = @"
                         <Button Name="btnSearchEmployeeID" Content="Search" Margin="10,0" Width="100" Height="35" Background="#007ACC" Foreground="White">
                             <Button.Resources><Style TargetType="Border"><Setter Property="CornerRadius" Value="5"/></Style></Button.Resources>
                         </Button>
-                        <TextBlock Name="lblEmployeeIDError" Text="? Employee ID not found!" Foreground="#D13438" FontSize="12" FontWeight="SemiBold" Margin="25,0,0,0" Visibility="Collapsed" VerticalAlignment="Center"/>
+                        <TextBlock Name="lblEmployeeIDError" Text="Employee ID not found!" TextWrapping="Wrap" MaxWidth="400" Foreground="#D13438" FontSize="12" FontWeight="SemiBold" Margin="25,0,0,0" Visibility="Collapsed" VerticalAlignment="Center"/>
                     </StackPanel>
                 </Border>
 
@@ -725,8 +728,7 @@ $inputXML = @"
                                 <GridView>
                                     <GridViewColumn Header="Name" DisplayMemberBinding="{Binding DisplayName}" Width="200"/>
                                     <GridViewColumn Header="Username" DisplayMemberBinding="{Binding SamAccountName}" Width="150"/>
-                                    <GridViewColumn Header="Extension Attr 2" DisplayMemberBinding="{Binding extensionAttribute2}" Width="150"/>
-                                    <GridViewColumn Header="Extension Attr 3" DisplayMemberBinding="{Binding extensionAttribute3}" Width="150"/>
+                                    <GridViewColumn Header="Employee ID" DisplayMemberBinding="{Binding EmployeeNumber}" Width="150"/>
                                 </GridView>
                             </ListView.View>
                         </ListView>
@@ -1018,7 +1020,7 @@ $xaml.SelectNodes("//*[@*[local-name()='Name']]") | ForEach-Object {
     Set-Variable -Name $name -Value $var -Scope Script
 }
 
-$txtVersion.Text = "Version Date: 09/09/2026"
+$txtVersion.Text = "Version Date: $($script:AppVersionDate)"
 
 $global:CurrentDC = $null
 $global:MyCred = $null
@@ -1064,14 +1066,161 @@ while ($null -eq $global:MyCred) {
             if ($window) { $window.Close() }
             Exit
         }
-        
-        [System.Windows.MessageBox]::Show(
-            "Authentication Failed!`n`nThe username or password you entered is incorrect.`n`nPlease try again.", 
-            "Login Error", 
-            [System.Windows.MessageBoxButton]::OK, 
-            [System.Windows.MessageBoxImage]::Error
-        )
+
+        $errMsg = $_.Exception.Message
+
+        # Without the AD module nothing in this tool can work, so say so instead of "wrong password"
+        if (-not (Get-Command Get-ADUser -ErrorAction SilentlyContinue)) {
+            [System.Windows.MessageBox]::Show(
+                "The Active Directory PowerShell module is not installed on this computer.`n`nInstall 'RSAT: Active Directory Domain Services and Lightweight Directory Services Tools' and run the tool again.",
+                "Missing Module",
+                [System.Windows.MessageBoxButton]::OK,
+                [System.Windows.MessageBoxImage]::Error
+            )
+            if ($window) { $window.Close() }
+            Exit
+        }
+
+        $isBadLogin = ($_.Exception -is [System.Security.Authentication.AuthenticationException]) -or
+                      ($errMsg -match "rejected the client credentials|user name or password is incorrect|unknown user name or bad password|logon failure|invalid credentials")
+
+        if ($isBadLogin) {
+            [System.Windows.MessageBox]::Show(
+                "Authentication Failed!`n`nThe username or password you entered is incorrect.`n`nPlease try again.", 
+                "Login Error", 
+                [System.Windows.MessageBoxButton]::OK, 
+                [System.Windows.MessageBoxImage]::Error
+            )
+        } else {
+            # Not a password problem (e.g. no network/VPN, domain controller unreachable)
+            $retry = [System.Windows.MessageBox]::Show(
+                "Could not verify your credentials:`n`n$errMsg`n`nCheck that you are connected to the GFL network (or VPN).`n`nTry again?",
+                "Login Error",
+                [System.Windows.MessageBoxButton]::YesNo,
+                [System.Windows.MessageBoxImage]::Warning
+            )
+            if ($retry -ne "Yes") {
+                if ($window) { $window.Close() }
+                Exit
+            }
+        }
     }
+}
+
+# Resolve the domain controller once, so every lookup and change goes to the same one
+try {
+    $global:CurrentDC = (Get-ADDomainController -ErrorAction Stop).HostName
+} catch {
+    $global:CurrentDC = "gfl.local"
+}
+
+### BACKGROUND WORK ###
+# AD lookups and path checks run in background runspaces so the window never freezes.
+# start_bg runs $work (a scriptblock with a param() block) with $argList in the background, then calls
+# $onDone on the UI thread as: & $onDone $result $state   ($result has .Ok, .Data, .Error, .ErrorType)
+# Only the newest request per channel is delivered, so a slow old search can't overwrite a newer one.
+# NOTE: $onDone runs later, so it can't see the calling function's local variables - pass them in $state.
+
+$bgSession = [System.Management.Automation.Runspaces.InitialSessionState]::CreateDefault()
+$bgSession.ImportPSModule(@("ActiveDirectory"))
+$global:BgPool = [runspacefactory]::CreateRunspacePool(1, 4, $bgSession, $Host)
+$global:BgPool.Open()
+
+$global:BgJobs   = New-Object System.Collections.ArrayList
+$global:BgLatest = @{}
+
+$global:BgTimer = New-Object System.Windows.Threading.DispatcherTimer
+$global:BgTimer.Interval = [TimeSpan]::FromMilliseconds(100)
+$global:BgTimer.Add_Tick({ bg_tick })
+
+function start_bg ($channel, [scriptblock]$work, [object[]]$argList, [scriptblock]$onDone, $state) {
+    $id = [guid]::NewGuid().ToString()
+    $global:BgLatest[$channel] = $id
+
+    # The work is sent as text: a scriptblock belongs to the UI runspace and would run back on the UI thread
+    $wrapper = @"
+try {
+    `$data = & { $($work.ToString()) } @args
+    [pscustomobject]@{ Ok = `$true; Data = `$data; Error = `$null; ErrorType = `$null }
+} catch {
+    [pscustomobject]@{ Ok = `$false; Data = `$null; Error = `$_.Exception.Message; ErrorType = `$_.Exception.GetType().Name }
+}
+"@
+
+    $ps = [PowerShell]::Create()
+    $ps.RunspacePool = $global:BgPool
+    $null = $ps.AddScript($wrapper)
+    foreach ($a in $argList) { $null = $ps.AddArgument($a) }
+
+    $null = $global:BgJobs.Add(@{
+        PS = $ps; Handle = $ps.BeginInvoke(); Channel = $channel; Id = $id; OnDone = $onDone; State = $state
+    })
+    $global:BgTimer.Start()
+}
+
+function bg_tick {
+    $done = @($global:BgJobs | Where-Object { $_.Handle.IsCompleted })
+
+    foreach ($job in $done) {
+        $global:BgJobs.Remove($job)
+        $result  = $null
+        $failMsg = "The background task returned no result."
+        try {
+            $out = $job.PS.EndInvoke($job.Handle)
+            if ($out.Count -gt 0) { $result = $out[$out.Count - 1] }
+        } catch {
+            $failMsg = $_.Exception.Message
+        }
+        $job.PS.Dispose()
+
+        if (-not $result) {
+            $result = [pscustomobject]@{ Ok = $false; Data = $null; Error = $failMsg; ErrorType = $null }
+        }
+
+        if ($global:BgLatest[$job.Channel] -eq $job.Id) {
+            try {
+                & $job.OnDone $result $job.State
+            } catch {
+                Write-Host "UI update error ($($job.Channel)): $($_.Exception.Message)" -ForegroundColor Red
+            }
+        }
+    }
+
+    if ($global:BgJobs.Count -eq 0) { $global:BgTimer.Stop() }
+}
+
+# Disables a button and shows a "working" caption while a background task runs
+$global:BusyText = @{}
+function set_busy ($button, [bool]$busy, $text = "Searching...") {
+    if ($busy) {
+        if (-not $global:BusyText.ContainsKey($button.Name)) { $global:BusyText[$button.Name] = $button.Content }
+        $button.Content   = $text
+        $button.IsEnabled = $false
+    } elseif ($global:BusyText.ContainsKey($button.Name)) {
+        $button.Content   = $global:BusyText[$button.Name]
+        $button.IsEnabled = $true
+        $global:BusyText.Remove($button.Name)
+    }
+}
+
+function log_error ($section, $target, $message) {
+    Write-Host "--- $section ERROR ---" -ForegroundColor Red
+    Write-Host "Target: $target" -ForegroundColor Yellow
+    Write-Host "Error Message: $message" -ForegroundColor White
+    Write-Host "-----------------------" -ForegroundColor Red
+}
+
+# Shows an error next to a search box; the full text is also in the tooltip in case it's cut off
+function show_search_error ($label, $text) {
+    $label.Text       = $text
+    $label.ToolTip    = $text
+    $label.Visibility = "Visible"
+}
+
+# "CN=Group Name,OU=...,DC=..." -> "Group Name"
+function group_name_from_dn ($dn) {
+    if ($dn -match '^CN=(?<name>(?:[^\\,]|\\.)+),') { return ($Matches.name -replace '\\', '') }
+    return $null
 }
 
 function show_screen ($screenName, $activeButton) {
@@ -1101,7 +1250,7 @@ $btnTier2.Add_Click({ show_screen "screenTier2" $btnTier2 })
 ### PING PANEL LOGIC ###
 # The ping panel lives in the LAPS screen (right column, under Recent Searches)
 
-$global:PingWin   = @{
+$global:PingUI    = @{
     Panel     = $pingPanel
     Title     = $pingTitle
     Subtitle  = $pingSubtitle
@@ -1122,7 +1271,7 @@ $global:PingTimer.Interval = [TimeSpan]::FromSeconds(1)
 $global:PingTimer.Add_Tick({ ping_tick })
 
 function set_ping_color ($hex) {
-    $global:PingWin.StatusBox.Background = [System.Windows.Media.BrushConverter]::new().ConvertFromString($hex)
+    $global:PingUI.StatusBox.Background = [System.Windows.Media.BrushConverter]::new().ConvertFromString($hex)
 }
 
 $global:PingCount = 5   # same as Windows "ping <host>"
@@ -1132,7 +1281,7 @@ function reset_ping_state ($target, $tag) {
     $global:PingTarget = $target
     $global:PingLines  = New-Object System.Collections.Generic.List[string]
 
-    $w = $global:PingWin
+    $w = $global:PingUI
     $w.Title.Text    = "Ping - $tag"
     $w.Subtitle.Text = "Pinging $target ($($global:PingCount) times)"
     $w.Log.Text      = ""
@@ -1141,13 +1290,13 @@ function reset_ping_state ($target, $tag) {
 function add_ping_line ($text) {
     $global:PingLines.Add("[$((Get-Date).ToString('HH:mm:ss'))] $text")
     while ($global:PingLines.Count -gt 100) { $global:PingLines.RemoveAt(0) }
-    $global:PingWin.Log.Text = ($global:PingLines -join "`r`n")
-    $global:PingWin.Log.ScrollToEnd()
+    $global:PingUI.Log.Text = ($global:PingLines -join "`r`n")
+    $global:PingUI.Log.ScrollToEnd()
 }
 
 function update_ping_stats {
     $lost = $global:PingSent - $global:PingOk
-    $global:PingWin.Stats.Text = "Sent: $($global:PingSent)   Replies: $($global:PingOk)   Lost: $lost"
+    $global:PingUI.Stats.Text = "Sent: $($global:PingSent)   Replies: $($global:PingOk)   Lost: $lost"
 }
 
 # Starts a fresh run of 5 pings (used by a new search and by the Re-Ping button)
@@ -1163,7 +1312,7 @@ function start_ping_run {
     $global:PingTimes = New-Object System.Collections.Generic.List[long]
     $global:PingAddr  = $null
 
-    $w = $global:PingWin
+    $w = $global:PingUI
     $w.Status.Text = "CHECKING..."
     $w.Detail.Text = ""
     set_ping_color "#888888"
@@ -1179,7 +1328,7 @@ function start_ping_run {
 # Run finished (or was stopped): show the overall result, like the summary at the end of CMD ping
 function finish_ping_run ($stopped) {
     stop_ping
-    $w = $global:PingWin
+    $w = $global:PingUI
     $w.Toggle.Content = "Re-Ping"
 
     $sent = $global:PingSent
@@ -1215,8 +1364,8 @@ function finish_ping_run ($stopped) {
 
 # Non-blocking: each tick either collects the finished ping or starts a new one, so the UI never freezes
 function ping_tick {
-    if (-not $global:PingWin) { return }
-    $w = $global:PingWin
+    if (-not $global:PingUI) { return }
+    $w = $global:PingUI
 
     if ($global:PingTask) {
         if (-not $global:PingTask.IsCompleted) { return }
@@ -1270,7 +1419,7 @@ function stop_ping {
 }
 
 function show_ping_panel ($target, $tag) {
-    $global:PingWin.Panel.Visibility = "Visible"
+    $global:PingUI.Panel.Visibility = "Visible"
     reset_ping_state $target $tag
     start_ping_run
 }
@@ -1293,7 +1442,19 @@ $pingClose.Add_Click({
 $window.Add_Closed({
     stop_ping
     if ($global:PingObj) { $global:PingObj.Dispose(); $global:PingObj = $null }
+    if ($global:BgTimer) { $global:BgTimer.Stop() }
+    # BeginClose doesn't wait, so a hung lookup (e.g. an unreachable share) can't stop the app closing
+    if ($global:BgPool) { $null = $global:BgPool.BeginClose($null, $null) }
 })
+
+function add_laps_history ($tag) {
+    # -eq is case-insensitive, so "gfl044230" and "GFL044230" count as the same entry
+    $existing = @($listLapsHistory.Items | Where-Object { $_ -eq $tag })
+    foreach ($e in $existing) { $listLapsHistory.Items.Remove($e) }
+
+    $listLapsHistory.Items.Insert(0, $tag)
+    while ($listLapsHistory.Items.Count -gt 5) { $listLapsHistory.Items.RemoveAt(5) }
+}
 
 function search_asset_tag {
     $tag = $assetTagSearch.Text.Trim()
@@ -1301,46 +1462,76 @@ function search_asset_tag {
     $lblLapsError.Visibility = "Collapsed"
     $lapsResultCard.Visibility = "Collapsed"
 
-    if ($tag -and $tag -ne "Search Asset Tag...") {
-        $pingTarget = $tag
-        try {
-            if (-not $global:CurrentDC) { $global:CurrentDC = (Get-ADDomainController).HostName }
+    if (-not $tag -or $tag -eq "Search Asset Tag...") { return }
 
-            $info = Get-LapsADPassword -Identity $tag -AsPlainText -Credential $global:MyCred -DecryptionCredential $global:MyCred -ErrorAction Stop
-            
+    set_busy $btnsearchLaps $true
+
+    start_bg "laps" {
+        param($tag, $cred, $dc)
+
+        # Computer object first (ping target + OU). If this fails we still want the LAPS password.
+        $computer = $null; $computerError = $null; $computerNotFound = $false
+        try {
+            $computer = Get-ADComputer -Identity $tag -Properties CanonicalName, DNSHostName -Server $dc -Credential $cred -ErrorAction Stop
+        } catch {
+            $computerError    = $_.Exception.Message
+            $computerNotFound = ($_.Exception.GetType().Name -eq "ADIdentityNotFoundException") -or ($computerError -match "Cannot find an object")
+        }
+
+        $account = $null; $password = $null; $lapsError = $null
+        try {
+            $info = Get-LapsADPassword -Identity $tag -AsPlainText -Credential $cred -DecryptionCredential $cred -ErrorAction Stop
             if (-not $info -or -not $info.Password) {
                 throw "LAPS object found, but your credentials do not have permission to read the password attribute on this machine's OU."
             }
-            
-            $adComputer = Get-ADComputer -Identity $tag -Properties CanonicalName, DNSHostName -Server $global:CurrentDC -Credential $global:MyCred -ErrorAction Stop
-            if ($adComputer.DNSHostName) { $pingTarget = $adComputer.DNSHostName }
-
-            $lblAssetTitle.Text = $tag
-            $lblAdminUser.Text  = ".\$($info.Account)"
-            $lblAdminPass.Text  = "$($info.Password)"
-            $lblAssetOU.Text    = $adComputer.CanonicalName 
-
-            $lapsResultCard.Visibility = "Visible"
-
-            if (-not $listLapsHistory.Items.Contains($tag)) {
-                $listLapsHistory.Items.Insert(0, $tag)
-                if ($listLapsHistory.Items.Count -gt 5) { $listLapsHistory.Items.RemoveAt(5) }
-            }
-
+            $account  = "$($info.Account)"
+            $password = "$($info.Password)"
         } catch {
-            Write-Host "--- LAPS ERROR ---" -ForegroundColor Red
-            Write-Host "Target Asset Tag: $tag" -ForegroundColor Yellow
-            Write-Host "Error Message: $($_.Exception.Message)" -ForegroundColor White
-            Write-Host "Script Location: $($_.InvocationInfo.ScriptName) at line $($_.InvocationInfo.ScriptLineNumber)" -ForegroundColor Gray
-            Write-Host "-----------------------" -ForegroundColor Red
+            $lapsError = $_.Exception.Message
+        }
 
-            $lblLapsError.Visibility = "Visible"
-            $assetTagSearch.Focus()
+        $ou  = $null; $dns = $null
+        if ($computer) { $ou = $computer.CanonicalName; $dns = $computer.DNSHostName }
+
+        [pscustomobject]@{
+            Account = $account; Password = $password; LapsError = $lapsError
+            OU = $ou; DNS = $dns; ComputerError = $computerError; ComputerNotFound = $computerNotFound
+        }
+    } @($tag, $global:MyCred, $global:CurrentDC) {
+        param($r, $s)
+        set_busy $btnsearchLaps $false
+        $tag = $s.Tag
+        $pingTarget = $tag
+
+        if (-not $r.Ok) {
+            log_error "LAPS" $tag $r.Error
+            show_search_error $lblLapsError "LAPS error: $($r.Error)"
+        } else {
+            $d = $r.Data
+            if ($d.DNS) { $pingTarget = $d.DNS }
+
+            if ($d.Password) {
+                $lblAssetTitle.Text = $tag
+                $lblAdminUser.Text  = ".\$($d.Account)"
+                $lblAdminPass.Text  = $d.Password
+                $lblAssetOU.Text    = if ($d.OU) { $d.OU } else { "Unknown (could not read the computer object: $($d.ComputerError))" }
+
+                $lapsResultCard.Visibility = "Visible"
+                add_laps_history $tag
+            } else {
+                log_error "LAPS" $tag "$($d.LapsError) | Computer lookup: $($d.ComputerError)"
+                if ($d.ComputerNotFound) {
+                    show_search_error $lblLapsError "Asset Tag not found!"
+                } else {
+                    show_search_error $lblLapsError "LAPS error: $($d.LapsError)"
+                }
+                $assetTagSearch.Focus()
+            }
         }
 
         # Ping runs whether or not the LAPS lookup worked, so you can still see if the PC is online
         show_ping_panel $pingTarget $tag
-    }
+    } @{ Tag = $tag }
 }
 
 $listLapsHistory.Add_SelectionChanged({
@@ -1362,55 +1553,101 @@ $btnsearchLaps.Add_Click({ search_asset_tag })
 
 ### USER SEARCH LOGIC ###
 
+# Switches the User Info sub-tabs (Information / Groups / Apps): shows the area and highlights its button
+function select_user_tab ($tab) {
+    $userContentArea.Visibility = if ($tab -eq "info")   { "Visible" } else { "Collapsed" }
+    $userGroupsArea.Visibility  = if ($tab -eq "groups") { "Visible" } else { "Collapsed" }
+    $userAppsArea.Visibility    = if ($tab -eq "apps")   { "Visible" } else { "Collapsed" }
+
+    $tabButtons = @{ info = $btnSubUserInfo; groups = $btnSubUserGroups; apps = $btnSubUserApps }
+    foreach ($key in $tabButtons.Keys) {
+        $btn = $tabButtons[$key]
+        if ($key -eq $tab) {
+            $btn.Foreground      = [System.Windows.Media.Brushes]::RoyalBlue
+            $btn.FontWeight      = "SemiBold"
+            $btn.BorderThickness = New-Object System.Windows.Thickness(0,0,0,2)
+            $btn.BorderBrush     = [System.Windows.Media.Brushes]::RoyalBlue
+        } else {
+            $btn.Foreground      = [System.Windows.Media.Brushes]::Gray
+            $btn.FontWeight      = "Normal"
+            $btn.BorderThickness = New-Object System.Windows.Thickness(0)
+        }
+    }
+}
+
+function hide_user_areas {
+    $userContentArea.Visibility     = "Collapsed"
+    $userGroupsArea.Visibility      = "Collapsed"
+    $userAppsArea.Visibility        = "Collapsed"
+    $userSubNavbar.Visibility       = "Collapsed"
+    $multipleResultsArea.Visibility = "Collapsed"
+}
+
 function search_user {
     $user = $userSearch.Text.Trim()
     
-    $lblUserError.Visibility        = "Collapsed"
-    $userContentArea.Visibility     = "Collapsed"
-    $multipleResultsArea.Visibility = "Collapsed"
-    $userSubNavbar.Visibility       = "Collapsed"
-    $userGroupsArea.Visibility      = "Collapsed"
+    $lblUserError.Visibility = "Collapsed"
+    hide_user_areas
 
     $listUserResults.Items.Clear()
     $global:currentLoadedUser = $null
 
-    if ($user -and $user -ne "Search User...") {
-        if ($user.length -gt 2) {
-            if (-not $global:CurrentDC) { $global:CurrentDC = (Get-ADDomainController).HostName }
+    if (-not $user -or $user -eq "Search User...") { return }
 
-            $filter = "SamAccountName -eq '$user' -or DisplayName -like '*$user*' -or Name -like '*$user*'"
-            $searchResults = @(Get-ADUser -Filter $filter -Server $global:CurrentDC -Properties Title, EmailAddress, Manager -ErrorAction SilentlyContinue)
+    if ($user.Length -le 2) {
+        show_search_error $lblUserError "Please type more than 2 characters!"
+        return
+    }
 
-            if ($searchResults.Count -eq 0) {
-                $lblUserError.Visibility = "Visible"
-                $lblUserError.Text = "? User not found!"
+    set_busy $btnsearchUser $true
 
-            } elseif ($searchResults.Count -eq 1) {
-                load_user $searchResults[0].SamAccountName
-        
-            } else {
-                foreach ($u in $searchResults) {
-                    $bestName = if ($u.DisplayName) { $u.DisplayName } else { $u.Name }
+    start_bg "user" {
+        param($user, $dc)
+        $safe = $user -replace "'", "''"   # an apostrophe (O'Brien) would otherwise break the filter
+        $filter = "SamAccountName -eq '$safe' -or DisplayName -like '*$safe*' -or Name -like '*$safe*'"
 
-                    $row = [PSCustomObject]@{
-                        DisplayName    = $bestName
-                        SamAccountName = $u.SamAccountName
-                        EmailAddress   = if ($u.EmailAddress) { $u.EmailAddress } else { "N/A" }
-                        Manager        = if ($u.Manager) { ($u.Manager -split ",")[0].Replace("CN=","") } else { "N/A" }
-                        Color          = if ($u.Enabled) { "Black" } else { "Red" }
-                    }
-
-                    $listUserResults.Items.Add($row) | Out-Null
-                }
-
-                $multipleResultsArea.Visibility = "Visible"
+        @(Get-ADUser -Filter $filter -Server $dc -Properties DisplayName, Title, EmailAddress, Manager -ErrorAction Stop | ForEach-Object {
+            [pscustomobject]@{
+                DisplayName = $_.DisplayName; Name = $_.Name; SamAccountName = $_.SamAccountName
+                EmailAddress = $_.EmailAddress; Manager = $_.Manager; Enabled = $_.Enabled
             }
+        })
+    } @($user, $global:CurrentDC) {
+        param($r, $s)
+        set_busy $btnsearchUser $false
+
+        if (-not $r.Ok) {
+            log_error "USER SEARCH" $s.User $r.Error
+            show_search_error $lblUserError "Search failed: $($r.Error)"
+            return
+        }
+
+        $searchResults = @($r.Data | Where-Object { $null -ne $_ })
+
+        if ($searchResults.Count -eq 0) {
+            show_search_error $lblUserError "User not found!"
+
+        } elseif ($searchResults.Count -eq 1) {
+            load_user $searchResults[0].SamAccountName
 
         } else {
-           $lblUserError.Visibility = "Visible"
-           $lblUserError.Text = "? Please type more than 2 characters!"
+            foreach ($u in $searchResults) {
+                $bestName = if ($u.DisplayName) { $u.DisplayName } else { $u.Name }
+
+                $row = [PSCustomObject]@{
+                    DisplayName    = $bestName
+                    SamAccountName = $u.SamAccountName
+                    EmailAddress   = if ($u.EmailAddress) { $u.EmailAddress } else { "N/A" }
+                    Manager        = if ($u.Manager) { ($u.Manager -split ",")[0].Replace("CN=","") } else { "N/A" }
+                    Color          = if ($u.Enabled) { "Black" } else { "Red" }
+                }
+
+                $listUserResults.Items.Add($row) | Out-Null
+            }
+
+            $multipleResultsArea.Visibility = "Visible"
         }
-    }
+    } @{ User = $user }
 }
 
 $global:lastClickedHeader = $null
@@ -1447,26 +1684,39 @@ function sort_users {
 }
 
 function load_user ($user) {
-    try {
-        $multipleResultsArea.Visibility = "Collapsed"
-        $lblUserError.Visibility = "Collapsed"
-        $userGroupsArea.Visibility = "Collapsed"
-        $userAppsArea.Visibility = "Collapsed"
-        $userContentArea.Visibility = "Visible"
-        $userSubNavbar.Visibility = "Visible"
-        
-        $btnSubUserInfo.Foreground = [System.Windows.Media.Brushes]::RoyalBlue
-        $btnSubUserInfo.BorderThickness = "0,0,0,2"
+    $global:currentLoadedUser = $null
+    $lblUserError.Visibility = "Collapsed"
+    $multipleResultsArea.Visibility = "Collapsed"
 
-        $btnSubUserGroups.Foreground = [System.Windows.Media.Brushes]::Gray
-        $btnSubUserGroups.BorderThickness = "0"
-        
-        $adUser = Get-ADUser -Identity $user -Server $global:CurrentDC -Properties DisplayName, Title, EmailAddress, Manager, 
-                        StreetAddress, City, State, PostalCode, Country, PasswordLastSet, lastLogonTimestamp, LastBadPasswordAttempt, badPwdCount,
-                        whenChanged, msExchRemoteRecipientType, extensionAttribute2, extensionAttribute3, AccountExpirationDate,
-                        employeeID, MobilePhone, OfficePhone, LockedOut -ErrorAction Stop
-        
-        $groups = Get-ADPrincipalGroupMembership -Identity $user | Sort-Object Name
+    set_busy $btnsearchUser $true "Loading..."
+
+    start_bg "loaduser" {
+        param($user, $dc)
+        $props = @("DisplayName", "Title", "EmailAddress", "Manager", "StreetAddress", "City", "State", "PostalCode", "Country",
+                   "PasswordLastSet", "lastLogonTimestamp", "LastBadPasswordAttempt", "badPwdCount", "whenChanged",
+                   "msExchRemoteRecipientType", "extensionAttribute2", "extensionAttribute3", "AccountExpirationDate",
+                   "employeeID", "MobilePhone", "OfficePhone", "LockedOut")
+
+        $adUser = Get-ADUser -Identity $user -Server $dc -Properties $props -ErrorAction Stop |
+                  Select-Object -Property (@("DistinguishedName", "SamAccountName", "Enabled") + $props)
+
+        $groups = @(Get-ADPrincipalGroupMembership -Identity $user -ErrorAction Stop | ForEach-Object { $_.DistinguishedName })
+
+        [pscustomobject]@{ User = $adUser; Groups = $groups }
+    } @($user, $global:CurrentDC) {
+        param($r, $s)
+        set_busy $btnsearchUser $false
+
+        if (-not $r.Ok) {
+            log_error "USER LOAD" $s.User $r.Error
+            show_search_error $lblUserError $r.Error
+            hide_user_areas
+            $global:currentLoadedUser = $null
+            return
+        }
+
+        $adUser = $r.Data.User
+        $groups = @($r.Data.Groups)
 
         $global:currentLoadedUser = $adUser.DistinguishedName
 
@@ -1480,7 +1730,10 @@ function load_user ($user) {
         $lblUserEmail.Text    = if ($adUser.EmailAddress) { $adUser.EmailAddress } else { "N/A" }
         $lblUserManager.Text  = if ($adUser.Manager) {($adUser.Manager -split ",")[0].Replace("CN=","")} else { "N/A" }
         $lblUserPhone.Text    = "$($officePhone) / $($mobilePhone)"
-        $lblUserAddress.Text  = $adUser.StreetAddress, $adUser.City, $adUser.State, $adUser.PostalCode, $adUser.Country
+
+        $addressParts = @($adUser.StreetAddress, $adUser.City, $adUser.State, $adUser.PostalCode, $adUser.Country) |
+                        Where-Object { -not [string]::IsNullOrWhiteSpace($_) }
+        $lblUserAddress.Text  = if ($addressParts) { $addressParts -join ", " } else { "N/A" }
 
         if ($groups -match "Disabled Users") {
             $lblUserLevel.Text = "Disabled"
@@ -1506,7 +1759,7 @@ function load_user ($user) {
         $lblPwdLastSet.Text       = if ($adUser.PasswordLastSet) { $adUser.PasswordLastSet.ToString("MMM dd, yyyy HH:mm") } else { "Never" }
         $lblLastLogin.Text        = if ($adUser.LastLogonTimestamp) { [DateTime]::FromFileTime($adUser.LastLogonTimestamp).ToString("MMM dd, yyyy HH:mm") } else { "Never" }
         $lblLastBadLogin.Text     = if ($adUser.LastBadPasswordAttempt) { $adUser.LastBadPasswordAttempt.ToString("MMM dd, yyyy HH:mm") } else { "Never" }
-        $lblModified.Text = if ($adUser.whenChanged) { $adUser.whenChanged.ToString("MMM dd, yyyy HH:mm") } else { "Never" }
+        $lblModified.Text         = if ($adUser.whenChanged) { $adUser.whenChanged.ToString("MMM dd, yyyy HH:mm") } else { "Never" }
         $lblBadPasswordCount.Text = $adUser.BadPwdCount
         
         if (-not $adUser.Enabled) {
@@ -1516,72 +1769,57 @@ function load_user ($user) {
             $btnResetPassword.Visibility = "Collapsed"
 
         } else {
-           if ($adUser.LockedOut)  {
+            if ($adUser.LockedOut) {
                 $lblUserStatus.Text = "LOCKED"
                 $brdUserStatus.Background = [System.Windows.Media.Brushes]::Crimson
-                $btnUnlockAccount.Visibility = "Visible"
-                $btnResetPassword.Visibility = "Visible"
-
             } else {
                 $lblUserStatus.Text = "UNLOCKED"
                 $brdUserStatus.Background = [System.Windows.Media.Brushes]::LimeGreen
-                $btnUnlockAccount.Visibility = "Visible"
-                $btnResetPassword.Visibility = "Visible"
-            } 
+            }
+            $btnUnlockAccount.Visibility = "Visible"
+            $btnResetPassword.Visibility = "Visible"
         }
 
         if ($adUser.AccountExpirationDate) {
             $lastActiveDay = $adUser.AccountExpirationDate.AddDays(-1)
-    
             $dpAccountExpiration.SelectedDate = $lastActiveDay
             $lblExpirationText.Text = $lastActiveDay.ToString("MMMM dd, yyyy")
         } else {
             $dpAccountExpiration.SelectedDate = $null
             $lblExpirationText.Text = "Never"
         }
-        
-        $userContentArea.Visibility = "Visible"
 
-    } catch {
-        Write-Host "--- USER LOAD ERROR ---" -ForegroundColor Red
-        Write-Host "Target User: $Username" -ForegroundColor Yellow
-        Write-Host "Error Message: $($_.Exception.Message)" -ForegroundColor White
-        Write-Host "Script Location: $($_.InvocationInfo.ScriptName) at line $($_.InvocationInfo.ScriptLineNumber)" -ForegroundColor Gray
-        Write-Host "-----------------------" -ForegroundColor Red
-
-        $lblUserError.Visibility = "Visible"
-        $lblUserError.Text = "$($_.Exception.Message)"
-        $userContentArea.Visibility = "Collapsed"
-        $userGroupsArea.Visibility = "Collapsed"
-        $userSubNavbar.Visibility = "Collapsed"
-        $multipleResultsArea.Visibility = "Collapsed"
-
-        $global:currentLoadedUser = $null
-    }
+        $userSubNavbar.Visibility = "Visible"
+        select_user_tab "info"
+    } @{ User = $user }
 }
 
 function get_user_groups {
     if (-not $global:currentLoadedUser) { return }
 
     $listUserGroups.Items.Clear()
-    
-    try {
-        $memberOfDNs = (Get-ADUser -Identity $global:currentLoadedUser -Properties memberOf -Server $global:CurrentDC).memberOf
-        $groups = $memberOfDNs | ForEach-Object { 
-            if ($_ -match '^CN=(?<name>(?:[^\\,]|\\.)+),') { $Matches.name -replace '\\', '' } 
-        } | Sort-Object
-        
-        foreach ($g in $groups) {
-            $row = [PSCustomObject]@{
-                GroupName = $g
-            }
-            $listUserGroups.Items.Add($row) | Out-Null
+    $lblGroupCount.Text = "Loading groups..."
+
+    start_bg "groups" {
+        param($userDN, $dc)
+        @((Get-ADUser -Identity $userDN -Properties memberOf -Server $dc -ErrorAction Stop).memberOf)
+    } @($global:currentLoadedUser, $global:CurrentDC) {
+        param($r, $s)
+        if ($s.UserDN -ne $global:currentLoadedUser) { return }   # a different user was loaded meanwhile
+
+        if (-not $r.Ok) {
+            Write-Host "Error loading groups: $($r.Error)" -ForegroundColor Red
+            $lblGroupCount.Text = "Could not load groups: $($r.Error)"
+            return
         }
-        
+
+        $listUserGroups.Items.Clear()
+        # Keep the full DN on each row so removing a group never depends on its display name
+        $rows = foreach ($dn in @($r.Data | Where-Object { $_ })) { [PSCustomObject]@{ GroupName = (group_name_from_dn $dn); DN = $dn } }
+        $rows | Sort-Object GroupName | ForEach-Object { $listUserGroups.Items.Add($_) | Out-Null }
+
         $lblGroupCount.Text = "Total Groups: $($listUserGroups.Items.Count)"
-    } catch {
-        Write-Host "Error loading groups: $($_.Exception.Message)" -ForegroundColor Red
-    }
+    } @{ UserDN = $global:currentLoadedUser }
 }
 
 function add_user_to_group {
@@ -1595,7 +1833,7 @@ function add_user_to_group {
     $groupName = $txtAddGroupName.Text.Trim()
 
     if ([string]::IsNullOrWhiteSpace($groupName) -or $groupName -eq "Enter group name to add...") {
-        $lblGroupActionError.Text = "? Please enter a group name."
+        $lblGroupActionError.Text = "Please enter a group name."
         $lblGroupActionError.Visibility = "Visible"
         return
     }
@@ -1603,28 +1841,24 @@ function add_user_to_group {
     try {
         $adGroup = Get-ADGroup -Identity $groupName -Server $global:CurrentDC -ErrorAction Stop
 
-        $memberOfDNs = (Get-ADUser -Identity $global:currentLoadedUser -Properties memberOf -Server $global:CurrentDC).memberOf
-        $currentGroups = $memberOfDNs | ForEach-Object {
-            if ($_ -match '^CN=(?<name>(?:[^\\,]|\\.)+),') { $Matches.name -replace '\\', '' }
-        }
+        $memberOfDNs = @((Get-ADUser -Identity $global:currentLoadedUser -Properties memberOf -Server $global:CurrentDC -ErrorAction Stop).memberOf)
 
-        if ($currentGroups -contains $adGroup.Name) {
-            $lblGroupActionError.Text = "? User is already a member of '$($adGroup.Name)'."
+        if ($memberOfDNs -contains $adGroup.DistinguishedName) {
+            $lblGroupActionError.Text = "User is already a member of '$($adGroup.Name)'."
             $lblGroupActionError.Visibility = "Visible"
             return
         }
 
-        Add-ADGroupMember -Identity $adGroup -Members $global:currentLoadedUser -Credential $global:MyCred -Server $global:CurrentDC
+        Add-ADGroupMember -Identity $adGroup -Members $global:currentLoadedUser -Credential $global:MyCred -Server $global:CurrentDC -ErrorAction Stop
 
         $txtAddGroupName.Text = "Enter group name to add..."
         $txtAddGroupName.Foreground = [System.Windows.Media.Brushes]::Gray
 
-        Start-Sleep -Milliseconds 200
         get_user_groups
         get_apps
 
     } catch {
-        $lblGroupActionError.Text = "? Could not add to group: $($_.Exception.Message)"
+        $lblGroupActionError.Text = "Could not add to group: $($_.Exception.Message)"
         $lblGroupActionError.Visibility = "Visible"
     }
 }
@@ -1640,7 +1874,7 @@ function remove_user_from_group {
     $selected = $listUserGroups.SelectedItem
 
     if ($null -eq $selected) {
-        $lblGroupActionError.Text = "? Select a group from the list to remove."
+        $lblGroupActionError.Text = "Select a group from the list to remove."
         $lblGroupActionError.Visibility = "Visible"
         return
     }
@@ -1652,21 +1886,20 @@ function remove_user_from_group {
     if ($confirm -ne "Yes") { return }
 
     try {
-        Remove-ADGroupMember -Identity $groupName -Members $global:currentLoadedUser -Credential $global:MyCred -Confirm:$false -Server $global:CurrentDC
+        Remove-ADGroupMember -Identity $selected.DN -Members $global:currentLoadedUser -Credential $global:MyCred -Confirm:$false -Server $global:CurrentDC -ErrorAction Stop
 
-        Start-Sleep -Milliseconds 200
         get_user_groups
         get_apps
 
     } catch {
-        $lblGroupActionError.Text = "? Could not remove from group: $($_.Exception.Message)"
+        $lblGroupActionError.Text = "Could not remove from group: $($_.Exception.Message)"
         $lblGroupActionError.Visibility = "Visible"
     }
 }
 
 $txtAddGroupName.Add_GotFocus({ if ($txtAddGroupName.Text -eq "Enter group name to add...") { $txtAddGroupName.Text = ""; $txtAddGroupName.Foreground = [System.Windows.Media.Brushes]::Black } })
 $txtAddGroupName.Add_LostFocus({ if ([string]::IsNullOrWhiteSpace($txtAddGroupName.Text)) { $txtAddGroupName.Text = "Enter group name to add..."; $txtAddGroupName.Foreground = [System.Windows.Media.Brushes]::Gray } })
-$txtAddGroupName.Add_KeyDown({ if ($_.Key -eq "Enter") { add_user_to_group } })
+$txtAddGroupName.Add_KeyDown({ if ($_.Key -eq "Enter") { $_.Handled = $true; add_user_to_group } })
 
 $btnAddUserGroup.Add_Click({ add_user_to_group })
 $btnRemoveUserGroup.Add_Click({ remove_user_from_group })
@@ -1674,16 +1907,24 @@ $btnRemoveUserGroup.Add_Click({ remove_user_from_group })
 function get_apps {
     if (-not $global:currentLoadedUser) { return }
 
-    try {
-        $memberOfDNs = (Get-ADUser -Identity $global:currentLoadedUser -Properties memberOf -Server $global:CurrentDC).memberOf
-        $userGroups = $memberOfDNs | ForEach-Object { 
-            if ($_ -match '^CN=(?<name>(?:[^\\,]|\\.)+),') { $Matches.name -replace '\\', '' } 
-        }
-    } catch { 
-        Write-Warning "Could not retrieve groups."
-        return 
-    }
+    start_bg "apps" {
+        param($userDN, $dc)
+        @((Get-ADUser -Identity $userDN -Properties memberOf -Server $dc -ErrorAction Stop).memberOf)
+    } @($global:currentLoadedUser, $global:CurrentDC) {
+        param($r, $s)
+        if ($s.UserDN -ne $global:currentLoadedUser) { return }   # a different user was loaded meanwhile
 
+        if (-not $r.Ok) {
+            Write-Warning "Could not retrieve groups: $($r.Error)"
+            return
+        }
+
+        $names = @($r.Data | Where-Object { $_ } | ForEach-Object { group_name_from_dn $_ })
+        render_apps $names
+    } @{ UserDN = $global:currentLoadedUser }
+}
+
+function render_apps ($userGroups) {
     $bc = New-Object System.Windows.Media.BrushConverter
 
     $AddListItem = {
@@ -1961,30 +2202,23 @@ function get_apps {
     $btnToggleCognosZscaler.Content = if ($hasCognosZscaler) { "Remove ZPA" } else { "Add ZPA" }
 }
 
-function toggle_groups {
-    param(
-        [string]$GroupName,
-        [System.Windows.Controls.Button]$Button
-    )
-
+function toggle_groups ([string]$GroupName) {
     if (-not $global:currentLoadedUser) { 
         [System.Windows.MessageBox]::Show("Please load a user first.")
         return 
     }
 
-    $memberOfDNs = (Get-ADUser -Identity $global:currentLoadedUser -Properties memberOf -Server $global:CurrentDC).memberOf
-    $userGroups = $memberOfDNs | ForEach-Object { 
-        if ($_ -match '^CN=(?<name>(?:[^\\,]|\\.)+),') { $Matches.name -replace '\\', '' } 
-    }
-    
     try {
-        if ($userGroups -contains $GroupName) {
-            Remove-ADGroupMember -Identity $GroupName -Members $global:currentLoadedUser -Credential $global:MyCred -Confirm:$false -Server $global:CurrentDC
+        $memberOfDNs = @((Get-ADUser -Identity $global:currentLoadedUser -Properties memberOf -Server $global:CurrentDC -ErrorAction Stop).memberOf)
+        # Use the group's full DN for removal so it works even when its CN and account name differ
+        $memberDN = $memberOfDNs | Where-Object { (group_name_from_dn $_) -eq $GroupName } | Select-Object -First 1
+
+        if ($memberDN) {
+            Remove-ADGroupMember -Identity $memberDN -Members $global:currentLoadedUser -Credential $global:MyCred -Confirm:$false -Server $global:CurrentDC -ErrorAction Stop
         } else {
-            Add-ADGroupMember -Identity $GroupName -Members $global:currentLoadedUser -Credential $global:MyCred -Server $global:CurrentDC
+            Add-ADGroupMember -Identity $GroupName -Members $global:currentLoadedUser -Credential $global:MyCred -Server $global:CurrentDC -ErrorAction Stop
         }
-        
-        Start-Sleep -Milliseconds 200
+
         get_apps
     } catch {
         [System.Windows.MessageBox]::Show("Error updating group: $($_.Exception.Message)")
@@ -1992,31 +2226,31 @@ function toggle_groups {
 }
 
 # Trux Click Events
-$btnToggleTruxAWS.Add_Click({ toggle_groups "CTX - AWS - APP - Trux" $btnToggleTruxAWS })
-$btnToggleTruxMand.Add_Click({ toggle_groups "Trux User Group" $btnToggleTruxMand })
+$btnToggleTruxAWS.Add_Click({ toggle_groups "CTX - AWS - APP - Trux" })
+$btnToggleTruxMand.Add_Click({ toggle_groups "Trux User Group" })
 
 # Tower Click Events
-$btnToggleTowerAWS.Add_Click({ toggle_groups "CTX - AWS - APP - Tower" $btnToggleTowerAWS })
+$btnToggleTowerAWS.Add_Click({ toggle_groups "CTX - AWS - APP - Tower" })
 
 # M5 Click Events
-$btnToggleM5US.Add_Click({ toggle_groups "M5 US Users" $btnToggleM5US })
-$btnToggleM5CA.Add_Click({ toggle_groups "M5 CA Users" $btnToggleM5CA })
+$btnToggleM5US.Add_Click({ toggle_groups "M5 US Users" })
+$btnToggleM5CA.Add_Click({ toggle_groups "M5 CA Users" })
 
 # OMS Click Events
-$btnToggleOMSV30.Add_Click({ toggle_groups "OMSV30" $btnToggleOMSV30 })
-$btnToggleOMSV30DEV.Add_Click({ toggle_groups "OMSV30DEV" $btnToggleOMSV30DEV })
+$btnToggleOMSV30.Add_Click({ toggle_groups "OMSV30" })
+$btnToggleOMSV30DEV.Add_Click({ toggle_groups "OMSV30DEV" })
 
 # CieTrade Click Events
-$btnToggleCieAWS.Add_Click({ toggle_groups "CTX - AWS - APP - Cietrade" $btnToggleCieAWS })
-$btnToggleCieScale1.Add_Click({ toggle_groups "CTX - AWS - APP - Cietrade Scale 1" $btnToggleCieScale1 })
-$btnToggleCieScale2.Add_Click({ toggle_groups "CTX - AWS - APP - Cietrade Scale 2" $btnToggleCieScale2 })
+$btnToggleCieAWS.Add_Click({ toggle_groups "CTX - AWS - APP - Cietrade" })
+$btnToggleCieScale1.Add_Click({ toggle_groups "CTX - AWS - APP - Cietrade Scale 1" })
+$btnToggleCieScale2.Add_Click({ toggle_groups "CTX - AWS - APP - Cietrade Scale 2" })
 
 # PCScale Click Events
-$btnTogglePCScaleAWS.Add_Click({ toggle_groups "CTX - AWS - APP - PC Scale" $btnPCScaleAWS })
+$btnTogglePCScaleAWS.Add_Click({ toggle_groups "CTX - AWS - APP - PC Scale" })
 
 # Cognos Click Events
-$btnToggleCognosCTX.Add_Click({ toggle_groups "CTX - IBM Cognos TM1 Client" $btnCognosCTX })
-$btnToggleCognosZscaler.Add_Click({ toggle_groups "Zscaler-ZPA-Cognos" $btnCognosZscaler })
+$btnToggleCognosCTX.Add_Click({ toggle_groups "CTX - IBM Cognos TM1 Client" })
+$btnToggleCognosZscaler.Add_Click({ toggle_groups "Zscaler-ZPA-Cognos" })
 
 
 $listUserResults.AddHandler([System.Windows.Controls.GridViewColumnHeader]::ClickEvent, [System.Windows.RoutedEventHandler]{ sort_users $args[0] $args[1] })
@@ -2034,9 +2268,9 @@ $btnResetPassword.Add_Click({
             try {
                 $securePass = ConvertTo-SecureString $newPassword -AsPlainText -Force
                 
-                Set-ADAccountPassword -Identity $global:currentLoadedUser -NewPassword $securePass -Reset -Credential $global:MyCred -Server $global:CurrentDC
-                Set-ADUser -Identity $global:currentLoadedUser -ChangePasswordAtLogon $false -Credential $global:MyCred -Server $global:CurrentDC
-                Unlock-ADAccount -Identity $global:currentLoadedUser -Credential $global:MyCred -Server $global:CurrentDC
+                Set-ADAccountPassword -Identity $global:currentLoadedUser -NewPassword $securePass -Reset -Credential $global:MyCred -Server $global:CurrentDC -ErrorAction Stop
+                Set-ADUser -Identity $global:currentLoadedUser -ChangePasswordAtLogon $false -Credential $global:MyCred -Server $global:CurrentDC -ErrorAction Stop
+                Unlock-ADAccount -Identity $global:currentLoadedUser -Credential $global:MyCred -Server $global:CurrentDC -ErrorAction Stop
                 
                 [System.Windows.MessageBox]::Show("Password reset and account unlocked.", "Success", "OK", "Information")
                 
@@ -2050,8 +2284,10 @@ $btnResetPassword.Add_Click({
 })
 
 $btnUnlockAccount.Add_Click({
+    if (-not $global:currentLoadedUser) { return }
+
     try {
-        Unlock-ADAccount -Identity $global:currentLoadedUser -Credential $global:MyCred -Server $global:CurrentDC
+        Unlock-ADAccount -Identity $global:currentLoadedUser -Credential $global:MyCred -Server $global:CurrentDC -ErrorAction Stop
         [System.Windows.MessageBox]::Show("Account unlocked successfully.", "Success", "OK", "Information")
         load_user $global:currentLoadedUser
     } catch {
@@ -2082,7 +2318,9 @@ $btnUpdateAttributes.Add_Click({
     if ($confirm -eq "Yes") {
         try {
             $adParams = @{
-                Identity = $global:currentLoadedUser
+                Identity    = $global:currentLoadedUser
+                Credential  = $global:MyCred
+                Server      = $global:CurrentDC   # same DC as the reload below, so the new values show straight away
                 ErrorAction = "Stop"
             }
             $replaceHash = @{}
@@ -2103,7 +2341,7 @@ $btnUpdateAttributes.Add_Click({
             if ($replaceHash.Count -gt 0) { $adParams.Add("Replace", $replaceHash) }
             if ($clearList.Count -gt 0) { $adParams.Add("Clear", $clearList) }
 
-            Set-ADUser @adParams -Credential $global:MyCred
+            Set-ADUser @adParams
             [System.Windows.MessageBox]::Show("Successfully updated Active Directory.", "Success", "OK", "Information")
             load_user $global:currentLoadedUser
         }
@@ -2115,7 +2353,7 @@ $btnUpdateAttributes.Add_Click({
 
 $dpAccountExpiration.Add_SelectedDateChanged({
     if ($dpAccountExpiration.SelectedDate) {
-        $lblExpirationText.Text = $dpAccountExpiration.SelectedDate.ToString("MMMM, dd, yyyy")
+        $lblExpirationText.Text = $dpAccountExpiration.SelectedDate.ToString("MMMM dd, yyyy")
     }
 })
 
@@ -2130,14 +2368,14 @@ $btnSaveExpiration.Add_Click({
             $rawDate = $dpAccountExpiration.SelectedDate
 
             if ($null -eq $rawDate) {
-                Clear-ADAccountExpiration -Identity $global:currentLoadedUser -Credential $global:MyCred -Server $global:CurrentDC
+                Clear-ADAccountExpiration -Identity $global:currentLoadedUser -Credential $global:MyCred -Server $global:CurrentDC -ErrorAction Stop
                 $lblExpirationText.Text = "Never"
                 [System.Windows.MessageBox]::Show("Account set to Never Expire.", "Success")
 
             } else {
                 $adExpirationDate = ([datetime]$rawDate).Date.AddDays(1)
 
-                Set-ADUser -Identity $global:currentLoadedUser -AccountExpirationDate $adExpirationDate -Credential $global:MyCred -Server $global:CurrentDC
+                Set-ADUser -Identity $global:currentLoadedUser -AccountExpirationDate $adExpirationDate -Credential $global:MyCred -Server $global:CurrentDC -ErrorAction Stop
 
                 $lblExpirationText.Text = ([datetime]$rawDate).ToString("MMMM dd, yyyy")
 
@@ -2151,77 +2389,34 @@ $btnSaveExpiration.Add_Click({
     }
 })
 
+# Digits only, but keep normal editing keys (arrows, Home/End, Ctrl+A/C/V/X/Z) working.
+# Pasted text is still checked by the validation in Update Attributes.
 $numericFilter = {
-    if (([int]$_.Key -ge 34 -and [int]$_.Key -le 43) -or 
-        ([int]$_.Key -ge 74 -and [int]$_.Key -le 83) -or 
-        $_.Key -eq "Back" -or $_.Key -eq "Delete" -or $_.Key -eq "Tab") {
-    } else {
-        $_.Handled = $true
-    }
+    $key  = $_.Key
+    $mods = [System.Windows.Input.Keyboard]::Modifiers
+
+    if (([int]$mods -band [int][System.Windows.Input.ModifierKeys]::Control) -ne 0) { return }
+
+    $isShift  = ([int]$mods -band [int][System.Windows.Input.ModifierKeys]::Shift) -ne 0
+    $isDigit  = ([int]$key -ge 34 -and [int]$key -le 43 -and -not $isShift) -or   # D0-D9 (Shift gives symbols)
+                ([int]$key -ge 74 -and [int]$key -le 83)                           # NumPad0-NumPad9
+    $isEdit   = $key.ToString() -in @("Back", "Delete", "Tab", "Left", "Right", "Home", "End", "Enter")
+
+    if (-not ($isDigit -or $isEdit)) { $_.Handled = $true }
 }
 
 $lblExtAttr2.Add_KeyDown($numericFilter)
 $lblExtAttr3.Add_KeyDown($numericFilter)
 
-$btnSubUserInfo.Add_Click({
-    $userContentArea.Visibility = "Visible"
-    $userGroupsArea.Visibility  = "Collapsed"
-    $userAppsArea.Visibility = "Collapsed"
-
-    $btnSubUserInfo.Foreground = [System.Windows.Media.Brushes]::RoyalBlue
-    $btnSubUserInfo.FontWeight = "SemiBold"
-    $btnSubUserInfo.BorderThickness = New-Object System.Windows.Thickness(0,0,0,2)
-    $btnSubUserInfo.BorderBrush = [System.Windows.Media.Brushes]::RoyalBlue
-    
-
-    $btnSubUserGroups.Foreground = [System.Windows.Media.Brushes]::Gray
-    $btnSubUserGroups.FontWeight = "Normal"
-    $btnSubUserGroups.BorderThickness = New-Object System.Windows.Thickness(0)
-
-    $btnSubUserApps.Foreground = [System.Windows.Media.Brushes]::Gray
-    $btnSubUserApps.FontWeight = "Normal"
-    $btnSubUserApps.BorderThickness = New-Object System.Windows.Thickness(0)
-})
+$btnSubUserInfo.Add_Click({ select_user_tab "info" })
 
 $btnSubUserGroups.Add_Click({
-    $userContentArea.Visibility = "Collapsed"
-    $userGroupsArea.Visibility = "Visible"
-    $userAppsArea.Visibility = "Collapsed"
-
-    $btnSubUserInfo.Foreground = [System.Windows.Media.Brushes]::Gray
-    $btnSubUserInfo.FontWeight = "Normal"
-    $btnSubUserInfo.BorderThickness = New-Object System.Windows.Thickness(0)
-
-    $btnSubUserGroups.Foreground = [System.Windows.Media.Brushes]::RoyalBlue
-    $btnSubUserGroups.FontWeight = "SemiBold"
-    $btnSubUserGroups.BorderThickness = New-Object System.Windows.Thickness(0,0,0,2)
-    $btnSubUserGroups.BorderBrush = [System.Windows.Media.Brushes]::RoyalBlue
-
-    $btnSubUserApps.Foreground = [System.Windows.Media.Brushes]::Gray
-    $btnSubUserApps.FontWeight = "Normal"
-    $btnSubUserApps.BorderThickness = New-Object System.Windows.Thickness(0)
-
+    select_user_tab "groups"
     get_user_groups
 })
 
 $btnSubUserApps.Add_Click({
-    $userContentArea.Visibility = "Collapsed"
-    $userGroupsArea.Visibility = "Collapsed"
-    $userAppsArea.Visibility = "Visible"
-
-    $btnSubUserInfo.Foreground = [System.Windows.Media.Brushes]::Gray
-    $btnSubUserInfo.FontWeight = "Normal"
-    $btnSubUserInfo.BorderThickness = New-Object System.Windows.Thickness(0)
-
-    $btnSubUserGroups.Foreground = [System.Windows.Media.Brushes]::Gray
-    $btnSubUserGroups.FontWeight = "Normal"
-    $btnSubUserGroups.BorderThickness = New-Object System.Windows.Thickness(0)
-
-    $btnSubUserApps.Foreground = [System.Windows.Media.Brushes]::RoyalBlue
-    $btnSubUserApps.FontWeight = "SemiBold"
-    $btnSubUserApps.BorderThickness = New-Object System.Windows.Thickness(0,0,0,2)
-    $btnSubUserApps.BorderBrush = [System.Windows.Media.Brushes]::RoyalBlue
-
+    select_user_tab "apps"
     get_apps
 })
 
@@ -2250,53 +2445,54 @@ function search_employee_id {
 
     $listEmployeeResults.Items.Clear()
 
-    if ($employeeID -and $employeeID -ne "Search Employee ID...") {
-        if ($employeeID.length -gt 2) {
-            try {
-                $filter = "EmployeeID -eq '$employeeID'"
-                $employees = @(Get-ADUser -Filter $filter -Properties DisplayName, EmployeeID -ErrorAction Stop)
+    if (-not $employeeID -or $employeeID -eq "Search Employee ID...") { return }
 
-                if ($employees.Count -eq 0) {
-                    $lblEmployeeIDError.Visibility = "Visible"
-                    $lblEmployeeIDError.Text = "? No users found."
+    if ($employeeID.Length -le 2) {
+        show_search_error $lblEmployeeIDError "Please type at least 3 characters!"
+        return
+    }
 
-                } elseif ($employees.Count -eq 1) {
-                    $employeeIDResultCard.Visibility = "Visible"
-                    $lblEmployeeName.Text = $employees[0].DisplayName
-                    $lblEmployeeSam.Text  = $employees[0].SamAccountName
-                    $lblEmployeeNumber.Text  = $employees[0].EmployeeID
-                
-                    $global:tempEmployee = $employees[0].SamAccountName
-        
-                } else {
-                    $employeeMultipleArea.Visibility = "Visible"
+    set_busy $btnSearchEmployeeID $true
 
-                    foreach ($u in $employees) {
-                        $listEmployeeResults.Items.Add([PSCustomObject]@{
-                            DisplayName = $u.DisplayName
-                            SamAccountName = $u.SamAccountName
-                            EmployeeNumber = $u.EmployeeID
-                        })
-                    }
-                }
+    start_bg "employee" {
+        param($employeeID)
+        $safe = $employeeID -replace "'", "''"
+        @(Get-ADUser -Filter "EmployeeID -eq '$safe'" -Properties DisplayName, EmployeeID -ErrorAction Stop | ForEach-Object {
+            [pscustomobject]@{ DisplayName = $_.DisplayName; SamAccountName = $_.SamAccountName; EmployeeNumber = $_.EmployeeID }
+        })
+    } @($employeeID) {
+        param($r, $s)
+        set_busy $btnSearchEmployeeID $false
 
-            } catch {
-                Write-Host "--- EMPLOYEE ID ERROR ---" -ForegroundColor Red
-                Write-Host "Target Employee ID: $employeeID" -ForegroundColor Yellow
-                Write-Host "Error Message: $($_.Exception.Message)" -ForegroundColor White
-                Write-Host "Script Location: $($_.InvocationInfo.ScriptName) at line $($_.InvocationInfo.ScriptLineNumber)" -ForegroundColor Gray
-                Write-Host "-----------------------" -ForegroundColor Red
-            }
+        if (-not $r.Ok) {
+            log_error "EMPLOYEE ID" $s.ID $r.Error
+            show_search_error $lblEmployeeIDError "Search failed: $($r.Error)"
+            return
+        }
+
+        $employees = @($r.Data | Where-Object { $null -ne $_ })
+
+        if ($employees.Count -eq 0) {
+            show_search_error $lblEmployeeIDError "No users found."
+
+        } elseif ($employees.Count -eq 1) {
+            $employeeIDResultCard.Visibility = "Visible"
+            $lblEmployeeName.Text   = $employees[0].DisplayName
+            $lblEmployeeSam.Text    = $employees[0].SamAccountName
+            $lblEmployeeNumber.Text = $employees[0].EmployeeNumber
+
+            $global:tempEmployee = $employees[0].SamAccountName
 
         } else {
-           $lblEmployeeIDError.Visibility = "Visible"
-           $lblEmployeeIDError.Text = "? Please type at least 3 characters!"
+            $employeeMultipleArea.Visibility = "Visible"
+            foreach ($u in $employees) { $listEmployeeResults.Items.Add($u) | Out-Null }
         }
-    }
+    } @{ ID = $employeeID }
 }
 
-$employeeIDSearch.Add_KeyDown({ if ($_.Key -eq "Enter") { search_employee_id } })
-$employeeIDSearch.Add_GotFocus({ if ($employeeIDSearch.Text -eq "Search Employee ID...") { $employeeIDSearch.Text = ""; $employeeIDSearch.Foreground = "Black" } })
+$employeeIDSearch.Add_KeyDown({ if ($_.Key -eq "Enter") { $_.Handled = $true; search_employee_id } })
+$employeeIDSearch.Add_GotFocus({ if ($employeeIDSearch.Text -eq "Search Employee ID...") { $employeeIDSearch.Text = ""; $employeeIDSearch.Foreground = [System.Windows.Media.Brushes]::Black } })
+$employeeIDSearch.Add_LostFocus({ if ([string]::IsNullOrWhiteSpace($employeeIDSearch.Text)) { $employeeIDSearch.Text = "Search Employee ID..."; $employeeIDSearch.Foreground = [System.Windows.Media.Brushes]::Gray } })
 $btnSearchEmployeeID.Add_Click({ search_employee_id })
 
 $btnGoToEmployeeProfile.Add_Click({
@@ -2329,55 +2525,58 @@ function search_printer_card {
 
     $listPrinterResults.Items.Clear()
 
-    if ($cardNumber -and $cardNumber -ne "Search Printer Card...") {
-        if ($cardNumber.length -gt 2) {
-            try {
-                $filter = "extensionAttribute2 -eq '$cardNumber'"
-                $owners = @(Get-ADUser -Filter $filter -Properties DisplayName, extensionAttribute2, extensionAttribute3 -ErrorAction Stop)
+    if (-not $cardNumber -or $cardNumber -eq "Search Printer Card...") { return }
 
-                if ($owners.Count -eq 0) {
-                    $lblPrinterCardError.Visibility = "Visible"
-                    $lblPrinterCardError.Text = "? No users assigned to this card."
+    if ($cardNumber.Length -le 2) {
+        show_search_error $lblPrinterCardError "Please type at least 3 characters!"
+        return
+    }
 
-                } elseif ($owners.Count -eq 1) {
-                    $printerResultCard.Visibility = "Visible"
-                    $lblPrinterOwnerName.Text = $owners[0].DisplayName
-                    $lblPrinterOwnerSam.Text  = $owners[0].SamAccountName
-                    $lblPrinterOwnerAttr2.Text  = $owners[0].extensionAttribute2
-                    $lblPrinterOwnerAttr3.Text  = $owners[0].extensionAttribute3
-                
-                    $global:tempPrinterUser = $owners[0].SamAccountName
-        
-                } else {
-                    $printerMultipleArea.Visibility = "Visible"
+    set_busy $btnSearchPrinterCard $true
 
-                    foreach ($u in $owners) {
-                        $listPrinterResults.Items.Add([PSCustomObject]@{
-                            DisplayName = $u.DisplayName
-                            SamAccountName = $u.SamAccountName
-                            extensionAttribute2 =$u.extensionAttribute2
-                            extensionAttribute3 = $u.extensionAttribute3
-                        })
-                    }
-                }
-
-            } catch {
-                Write-Host "--- PRINTER CARD ERROR ---" -ForegroundColor Red
-                Write-Host "Target Printer Card Number: $cardNumber" -ForegroundColor Yellow
-                Write-Host "Error Message: $($_.Exception.Message)" -ForegroundColor White
-                Write-Host "Script Location: $($_.InvocationInfo.ScriptName) at line $($_.InvocationInfo.ScriptLineNumber)" -ForegroundColor Gray
-                Write-Host "-----------------------" -ForegroundColor Red
+    start_bg "printer" {
+        param($cardNumber)
+        $safe = $cardNumber -replace "'", "''"
+        @(Get-ADUser -Filter "extensionAttribute2 -eq '$safe'" -Properties DisplayName, extensionAttribute2, extensionAttribute3 -ErrorAction Stop | ForEach-Object {
+            [pscustomobject]@{
+                DisplayName = $_.DisplayName; SamAccountName = $_.SamAccountName
+                extensionAttribute2 = $_.extensionAttribute2; extensionAttribute3 = $_.extensionAttribute3
             }
+        })
+    } @($cardNumber) {
+        param($r, $s)
+        set_busy $btnSearchPrinterCard $false
+
+        if (-not $r.Ok) {
+            log_error "PRINTER CARD" $s.Card $r.Error
+            show_search_error $lblPrinterCardError "Search failed: $($r.Error)"
+            return
+        }
+
+        $owners = @($r.Data | Where-Object { $null -ne $_ })
+
+        if ($owners.Count -eq 0) {
+            show_search_error $lblPrinterCardError "No users assigned to this card."
+
+        } elseif ($owners.Count -eq 1) {
+            $printerResultCard.Visibility = "Visible"
+            $lblPrinterOwnerName.Text  = $owners[0].DisplayName
+            $lblPrinterOwnerSam.Text   = $owners[0].SamAccountName
+            $lblPrinterOwnerAttr2.Text = $owners[0].extensionAttribute2
+            $lblPrinterOwnerAttr3.Text = $owners[0].extensionAttribute3
+
+            $global:tempPrinterUser = $owners[0].SamAccountName
 
         } else {
-           $lblPrinterCardError.Visibility = "Visible"
-           $lblPrinterCardError.Text = "? Please type at least 3 characters!"
+            $printerMultipleArea.Visibility = "Visible"
+            foreach ($u in $owners) { $listPrinterResults.Items.Add($u) | Out-Null }
         }
-    }
+    } @{ Card = $cardNumber }
 }
 
-$printerCardSearch.Add_KeyDown({ if ($_.Key -eq "Enter") { search_printer_card } })
-$printerCardSearch.Add_GotFocus({ if ($printerCardSearch.Text -eq "Search Printer Card...") { $printerCardSearch.Text = ""; $printerCardSearch.Foreground = "Black" } })
+$printerCardSearch.Add_KeyDown({ if ($_.Key -eq "Enter") { $_.Handled = $true; search_printer_card } })
+$printerCardSearch.Add_GotFocus({ if ($printerCardSearch.Text -eq "Search Printer Card...") { $printerCardSearch.Text = ""; $printerCardSearch.Foreground = [System.Windows.Media.Brushes]::Black } })
+$printerCardSearch.Add_LostFocus({ if ([string]::IsNullOrWhiteSpace($printerCardSearch.Text)) { $printerCardSearch.Text = "Search Printer Card..."; $printerCardSearch.Foreground = [System.Windows.Media.Brushes]::Gray } })
 $btnSearchPrinterCard.Add_Click({ search_printer_card })
 
 $btnGoToUserProfile.Add_Click({
@@ -2594,13 +2793,26 @@ $btnT2Clear.Add_Click({ clear_t2_screen })
 
 ### PATHS LOGIC ###
 
+# Test-Path on an unreachable share can hang for a while, so it runs in the background
 $fnOpenPath = {
-    $path = $this.Tag
-    if (Test-Path $path) { 
-        Invoke-Item $path 
-    } else { 
-        [System.Windows.MessageBox]::Show("Path not found: $path", "Error") 
-    }
+    $btn  = $this
+    $path = $btn.Tag
+
+    set_busy $btn $true "Checking..."
+
+    start_bg "path-$($btn.Name)" {
+        param($path)
+        Test-Path -LiteralPath $path
+    } @($path) {
+        param($r, $s)
+        set_busy $s.Button $false
+
+        if ($r.Ok -and $r.Data) {
+            Invoke-Item -LiteralPath $s.Path
+        } else {
+            [System.Windows.MessageBox]::Show("Path not found: $($s.Path)", "Error")
+        }
+    } @{ Button = $btn; Path = $path }
 }
 
 @($btnOpenSDrive, $btnOpenKDrive, $btnOpenZDrive, $btnOpenFS1, $btnOpenFS4, $btnOpenAWS, $btnOpenLRS, $btnOpenPAFE, $btnOpenWallpaper) | ForEach-Object {
