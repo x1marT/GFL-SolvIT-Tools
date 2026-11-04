@@ -1,4 +1,4 @@
-﻿# If anything fails while starting, show the error instead of letting the console window close silently
+# If anything fails while starting, show the error instead of letting the console window close silently
 # (this is what happens with right-click > Run with PowerShell). A copy is saved in %TEMP%.
 trap {
     $errText = "GFL SolvIT Tools could not start.`n`n$($_.Exception.Message)`n`nLine $($_.InvocationInfo.ScriptLineNumber): $("$($_.InvocationInfo.Line)".Trim())"
