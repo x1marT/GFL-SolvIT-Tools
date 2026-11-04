@@ -1,0 +1,2567 @@
+﻿Add-Type -AssemblyName PresentationFramework, PresentationCore, WindowsBase
+Add-Type -AssemblyName Microsoft.VisualBasic
+
+$inputXML = @"
+<Window xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="GFLSolvIT Tools" Height="780" Width="1050" Background="#F3F3F3">
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="190"/>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+
+        <Border Grid.Column="0" Background="#2D2D30">
+            <Grid Margin="0,20,0,0">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+
+                <TextBlock Grid.Row="0" Text="GFL SolvIT Tools" Foreground="White" FontSize="20" FontWeight="Bold" Margin="20,0,0,30" FontFamily="Segoe UI"/>
+
+                <StackPanel Grid.Row="1">
+                    <Button Name="btnLaps" Height="40" Background="#3E3E42" Foreground="White" BorderThickness="0" HorizontalContentAlignment="Left" Padding="15,0,0,0">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE8D7;" FontSize="16" VerticalAlignment="Center" Margin="0,0,10,0"/>
+                            <TextBlock Text="LAPS" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </Button>
+
+                    <Button Name="btnUserInfo" Height="40" Background="Transparent" Foreground="White" BorderThickness="0" HorizontalContentAlignment="Left" Padding="15,0,0,0">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE77B;" FontSize="16" VerticalAlignment="Center" Margin="0,0,10,0"/>
+                            <TextBlock Text="User Info" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </Button>
+
+                    <Button Name="btnPrinterCard" Height="40" Background="Transparent" Foreground="White" BorderThickness="0" HorizontalContentAlignment="Left" Padding="15,0,0,0">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE749;" FontSize="16" VerticalAlignment="Center" Margin="0,0,10,0"/>
+                            <TextBlock Text="Printer Card" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </Button>
+
+                    <Button Name="btnEmployeeID" Height="40" Background="Transparent" Foreground="White" BorderThickness="0" HorizontalContentAlignment="Left" Padding="15,0,0,0">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE779;" FontSize="16" VerticalAlignment="Center" Margin="0,0,10,0"/>
+                            <TextBlock Text="Employee ID" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </Button>
+
+                    <Button Name="btnPaths" Height="40" Background="Transparent" Foreground="White" BorderThickness="0" HorizontalContentAlignment="Left" Padding="15,0,0,0">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xED25;" FontSize="16" VerticalAlignment="Center" Margin="0,0,10,0"/>
+                            <TextBlock Text="Paths" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </Button>
+
+                    <Button Name="btnTier2" Height="40" Background="Transparent" Foreground="White" BorderThickness="0" HorizontalContentAlignment="Left" Padding="15,0,0,0">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE774;" FontSize="16" VerticalAlignment="Center" Margin="0,0,10,0"/>
+                            <TextBlock Text="Tier 2 Lookup" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </Button>
+
+                </StackPanel>
+
+                <StackPanel Grid.Row="2">
+                    <Border Height="1" Background="#3E3E42" Margin="15,0,15,8"/>
+
+                    <TextBlock Name="txtVersion" Text="Version 2.0.0" FontSize="10" Foreground="Gray" HorizontalAlignment="Left" Margin="20,8,0,10" />
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <Grid Grid.Column="1">
+            <Grid Name="screenLaps" Visibility="Visible">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/> <RowDefinition Height="80"/>   <RowDefinition Height="*"/>    </Grid.RowDefinitions>
+    
+                <StackPanel Grid.Row="0" Margin="25,15,0,15">
+                    <TextBlock Text="LAPS" FontSize="24" FontWeight="Bold" Foreground="#2D2D30" FontFamily="Segoe UI"/>
+                    <TextBlock Text="Search for a workstation asset tag to retrieve credentials." FontSize="13" Foreground="#666"/>
+                </StackPanel>
+
+                <Border Grid.Row="1" Background="White" BorderBrush="#E5E5E5" BorderThickness="0,0,0,1">
+                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="20,0">
+                        <Border CornerRadius="15" Background="#F1F1F1" Width="300" Height="35" Padding="10,0">
+                            <TextBox Name="assetTagSearch" BorderThickness="0" Background="Transparent" VerticalContentAlignment="Center" Text="Search Asset Tag..." Foreground="Gray"/>
+                        </Border>
+                        <Button Name="btnsearchLaps" Content="Search" Margin="10,0" Width="100" Height="35" Background="#007ACC" Foreground="White">
+                            <Button.Resources><Style TargetType="Border"><Setter Property="CornerRadius" Value="5"/></Style></Button.Resources>
+                        </Button>
+                        <TextBlock Name="lblLapsError" Text="? Asset Tag not found!" Foreground="#D13438" FontSize="12" FontWeight="SemiBold" Margin="25,0,0,0" Visibility="Collapsed" VerticalAlignment="Center"/>
+                    </StackPanel>
+                </Border>
+
+                <Grid Grid.Row="2" Margin="30">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="250"/>
+                    </Grid.ColumnDefinitions>
+
+                    <StackPanel Grid.Column="0" Name="lapsResultCard" Visibility="Collapsed">
+                        <Border Width="380" HorizontalAlignment="Left" Background="White" CornerRadius="12">
+                            <Border.Effect><DropShadowEffect BlurRadius="15" Opacity="0.1" ShadowDepth="4"/></Border.Effect>
+                            <Border Padding="25">
+                                <StackPanel>
+                                    <TextBox Name="lblAssetTitle" Text="Workstation Details" IsReadOnly="True" BorderThickness="0" Background="Transparent" FontSize="18" FontWeight="Bold" Margin="0,0,0,15"/>
+                                    <Separator Background="#EEE" Margin="0,0,0,20"/>
+                                    <TextBlock Text="Local Admin User" Foreground="#888" FontSize="11" Margin="0,0,0,2"/>
+                                    <TextBox Name="lblAdminUser" Text=".\Administrator" IsReadOnly="True" BorderThickness="0" Background="Transparent" FontSize="16" FontWeight="SemiBold" Margin="0,0,0,20"/>
+                                    <TextBlock Text="Password" Foreground="#888" FontSize="11" Margin="0,0,0,2"/>
+                                    <Border Background="#F9F9F9" Padding="15" CornerRadius="8">
+                                        <TextBox Name="lblAdminPass" Text="PasswordValue" IsReadOnly="True" BorderThickness="0" Background="Transparent" FontSize="20" FontFamily="Consolas" Foreground="#D13438" FontWeight="Bold"/>
+                                    </Border>
+                                    <TextBlock Text="Computer Location" Foreground="#888" FontSize="11" Margin="0,2,0,0"/>
+                                    <TextBox Name="lblAssetOU" Text="OU" IsReadOnly="True" BorderThickness="0" Background="Transparent" FontSize="16" FontWeight="SemiBold" Margin="0,0,0,20" TextWrapping="Wrap"/>
+                                </StackPanel>
+                            </Border>
+                        </Border>
+                    </StackPanel>
+
+                    <Border Grid.Column="1" Background="White" CornerRadius="10" Margin="20,0,0,0" VerticalAlignment="Top">
+                        <Border.Effect><DropShadowEffect BlurRadius="10" Opacity="0.05"/></Border.Effect>
+                        <Border Padding="15">
+                            <StackPanel>
+                                <TextBlock Text="Recent Searches" FontWeight="Bold" Foreground="#333" Margin="0,0,0,10"/>
+                                <ListBox Name="listLapsHistory" BorderThickness="0" Background="Transparent" Height="200"/>
+                                <Button Name="btnClearHistory" Content="Clear History" Background="Transparent" Foreground="#999" FontSize="10" BorderThickness="0" Margin="0,10,0,0"/>
+                            </StackPanel>
+                        </Border>
+                    </Border>
+                </Grid>
+            </Grid>
+
+            <Grid Name="screenUserInfo" Visibility="Collapsed">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/> <RowDefinition Height="80"/> <RowDefinition Height="Auto"/>   <RowDefinition Height="*"/>    <RowDefinition Height="Auto"/><RowDefinition Height="12"/> </Grid.RowDefinitions>
+
+                <StackPanel Grid.Row="0" Margin="25,15,0,15">
+                    <TextBlock Text="User Account Lookup" FontSize="24" FontWeight="Bold" Foreground="#2D2D30" FontFamily="Segoe UI"/>
+                    <TextBlock Text="Lookup Active Directory user details, account status, and security groups." FontSize="13" Foreground="#666"/>
+                </StackPanel>
+
+                <Border Grid.Row="1" Background="White" BorderBrush="#E5E5E5" BorderThickness="0,0,0,1">
+                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="20,0">
+                        <Border CornerRadius="15" Background="#F1F1F1" Width="300" Height="35" Padding="10,0">
+                            <TextBox Name="userSearch" BorderThickness="0" Background="Transparent" VerticalContentAlignment="Center" Text="Search User..." Foreground="Gray"/>
+                        </Border>
+                        <Button Name="btnsearchUser" Content="Search" Margin="10,0" Width="100" Height="35" Background="#007ACC" Foreground="White">
+                            <Button.Resources><Style TargetType="Border"><Setter Property="CornerRadius" Value="5"/></Style></Button.Resources>
+                        </Button>
+                        <TextBlock Name="lblUserError" Text="? User not found!" Foreground="#D13438" FontSize="12" FontWeight="SemiBold" Margin="25,0,0,0" Visibility="Collapsed" VerticalAlignment="Center"/>
+                    </StackPanel>
+                </Border>
+
+                <Border Name="userSubNavbar" Grid.Row="2" Background="#F9F9F9" BorderBrush="#E5E5E5" BorderThickness="0,1,0,1" Visibility="Collapsed">
+                    <StackPanel Orientation="Horizontal" Margin="20,0">
+                        <Button Name="btnSubUserInfo" Content="Information" Background="Transparent" Foreground="#007ACC" FontWeight="SemiBold" BorderThickness="0,0,0,2" BorderBrush="#007ACC" Height="40" Padding="15,0" Cursor="Hand"/>
+                        <Button Name="btnSubUserGroups" Content="Groups" Background="Transparent" Foreground="#666" BorderThickness="0" Height="40" Padding="15,0" Cursor="Hand"/>
+                        <Button Name="btnSubUserApps" Content="Apps" Background="Transparent" Foreground="#666" BorderThickness="0" Height="40" Padding="15,0" Cursor="Hand"/>
+                    </StackPanel>
+                </Border>
+
+                <Grid Grid.Row="3" Name="userContentArea" Margin="25" Visibility="Collapsed">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="400"/> 
+                        <ColumnDefinition Width="320"/> 
+                    </Grid.ColumnDefinitions>
+
+                    <Border Grid.Column="0" Background="White" CornerRadius="12" VerticalAlignment="Top">
+                        <Border.Effect><DropShadowEffect BlurRadius="15" Opacity="0.1" ShadowDepth="4"/></Border.Effect>
+                        <Border Padding="25">
+                            <StackPanel>
+                                <StackPanel Orientation="Horizontal" Margin="0,0,0,20">
+                                    <Border Width="50" Height="50" CornerRadius="25" Background="#007ACC" Margin="0,0,15,0">
+                                        <TextBlock Text="??" Foreground="White" FontSize="24" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                    </Border>
+                                    <StackPanel VerticalAlignment="Center">
+                                        <TextBox Name="lblUserName" Text="User Name" IsReadOnly="True" FontSize="18" FontWeight="Bold" BorderThickness="0" Background="Transparent"/>
+                                        <TextBox Name="lblUserJobTitle" Text="Job Title" IsReadOnly="True" FontSize="13" Foreground="#666" BorderThickness="0" Background="Transparent"/>
+                                    </StackPanel>
+                                </StackPanel>
+                                <Separator Background="#EEE" Margin="0,0,0,20"/>
+                                <Grid Name="gridUserInfo">
+                                    <Grid.ColumnDefinitions><ColumnDefinition Width="Auto"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
+
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto"/><RowDefinition Height="12"/> 
+                                        <RowDefinition Height="Auto"/><RowDefinition Height="12"/> 
+                                        <RowDefinition Height="Auto"/><RowDefinition Height="12"/> 
+                                        <RowDefinition Height="Auto"/><RowDefinition Height="12"/> 
+                                        <RowDefinition Height="Auto"/><RowDefinition Height="12"/> 
+                                        <RowDefinition Height="Auto"/><RowDefinition Height="12"/> 
+                                        <RowDefinition Height="Auto"/><RowDefinition Height="12"/> 
+                                        <RowDefinition Height="Auto"/><RowDefinition Height="12"/>
+                                        <RowDefinition Height="Auto"/>
+                                    </Grid.RowDefinitions>
+
+                                    <TextBlock Grid.Row="0" Text="Status:" Foreground="#888" FontSize="12" VerticalAlignment="Center"/>
+                                    <StackPanel Grid.Row="0" Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Right">
+                                        <Button Name="btnUnlockAccount" Content="UNLOCK" Background="#D13438" Foreground="White" FontSize="10" FontWeight="Bold" Padding="8,2" Margin="0,0,10,0" Visibility="Collapsed">
+                                            <Button.Resources><Style TargetType="Border"><Setter Property="CornerRadius" Value="4"/></Style></Button.Resources>
+                                        </Button>
+                                        <Button Name="btnResetPassword" Content="RESET PWD" Background="#007ACC" Foreground="White" FontSize="10" FontWeight="Bold" Padding="8,2" Margin="0,0,10,0">
+                                            <Button.Resources><Style TargetType="Border"><Setter Property="CornerRadius" Value="4"/></Style></Button.Resources>
+                                        </Button>
+                                        <Border Name="brdUserStatus" Padding="8,2" CornerRadius="4" Background="#E1F5FE">
+                                            <TextBlock Name="lblUserStatus" Text="Unlocked" FontSize="11" FontWeight="Bold"/>
+                                        </Border>
+                                    </StackPanel>
+                                    <TextBlock Grid.Row="2" Text="Employee ID:" Foreground="#888" FontSize="12"/>
+                                    <TextBox Grid.Row="2" Grid.Column="1" Name="lblEmployeeID" Text="N/A" IsReadOnly="True" BorderThickness="0" Background="Transparent" HorizontalAlignment="Right" FontWeight="SemiBold"/>
+                                    <TextBlock Grid.Row="4" Text="User Level:" Foreground="#888" FontSize="12"/>
+                                    <TextBox Grid.Row="4" Grid.Column="1" Name="lblUserLevel" Text="Standard User" IsReadOnly="True" BorderThickness="0" Background="Transparent" HorizontalAlignment="Right" FontWeight="SemiBold"/>
+                                    <TextBlock Grid.Row="6" Text="Username:" Foreground="#888" FontSize="12"/>
+                                    <TextBox Grid.Row="6" Grid.Column="1" Name="lblUserSam" Text="N/A" IsReadOnly="True" BorderThickness="0" Background="Transparent" HorizontalAlignment="Right" FontWeight="SemiBold"/>
+                                    <TextBlock Grid.Row="8" Text="Email:" Foreground="#888" FontSize="12"/>
+                                    <TextBox Grid.Row="8" Grid.Column="1" Name="lblUserEmail" Text="N/A" IsReadOnly="True" BorderThickness="0" Background="Transparent" HorizontalAlignment="Right" FontWeight="SemiBold"/>
+                                    <TextBlock Grid.Row="10" Text="Manager:" Foreground="#888" FontSize="12"/>
+                                    <TextBox Grid.Row="10" Grid.Column="1" Name="lblUserManager" Text="N/A" IsReadOnly="True" BorderThickness="0" Background="Transparent" HorizontalAlignment="Right" FontWeight="SemiBold"/>
+                                    <TextBlock Grid.Row="12" Text="Phone/Mobile:" Foreground="#888" FontSize="12"/>
+                                    <TextBox Grid.Row="12" Grid.Column="1" Name="lblUserPhone" Text="N/A" IsReadOnly="True" BorderThickness="0" Background="Transparent" HorizontalAlignment="Right" FontWeight="SemiBold"/>
+                                    <TextBlock Grid.Row="14" Text="Address:" Foreground="#888" FontSize="12" VerticalAlignment="Top"/>
+                                    <TextBox Grid.Row="14" Grid.Column="1" Name="lblUserAddress" Text="N/A" IsReadOnly="True" BorderThickness="0" Background="Transparent" HorizontalAlignment="Right" FontWeight="SemiBold" TextWrapping="Wrap" TextAlignment="Right" MaxWidth="220"/>
+                                    <TextBlock Grid.Row="16" Text="Expiration Date:" Foreground="#888" FontSize="12" VerticalAlignment="Center"/>
+                                    <StackPanel Grid.Row="16" Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Right">
+                                        <TextBox Name="lblExpirationText" Text="Never" IsReadOnly="True" BorderThickness="0" Background="Transparent" FontWeight="SemiBold" VerticalAlignment="Center" Margin="0,0,10,0"/>
+    
+                                        <DatePicker Name="dpAccountExpiration" Width="30" Height="25" Background="Transparent" BorderThickness="0"/>
+    
+                                        <Button Name="btnClearExpiration" Content="&#xE711;" FontFamily="Segoe MDL2 Assets" Width="30" Height="25" Margin="5,0,0,0" Background="#dc3545" Foreground="White" ToolTip="Set to Never Expire">
+                                            <Button.Resources><Style TargetType="Border"><Setter Property="CornerRadius" Value="4"/></Style></Button.Resources>
+                                        </Button>
+
+                                        <Button Name="btnSaveExpiration" Content="&#xE74E;" FontFamily="Segoe MDL2 Assets" Width="30" Height="25" Margin="5,0,0,0" Background="#28a745" Foreground="White" ToolTip="Save Expiration Date">
+                                            <Button.Resources><Style TargetType="Border"><Setter Property="CornerRadius" Value="4"/></Style></Button.Resources>
+                                        </Button>
+                                    </StackPanel>
+
+                                </Grid>
+                            </StackPanel>
+                        </Border>
+                    </Border>
+
+                    <StackPanel Grid.Column="1" Margin="20,0,0,0">
+                        <Border Background="White" CornerRadius="12" Margin="0,0,0,20">
+                            <Border.Effect><DropShadowEffect BlurRadius="10" Opacity="0.05"/></Border.Effect>
+                            <Border Padding="20">
+                                <StackPanel>
+                                    <TextBlock Text="Extensions" FontWeight="Bold" Margin="0,0,0,12"/>
+            
+                                    <TextBlock Text="Exch Remote Type" Foreground="#888" FontSize="10"/>
+                                    <TextBox Name="lblUserExch" Text="N/A" IsReadOnly="True" BorderThickness="0" Background="Transparent" FontWeight="SemiBold" Margin="0,0,0,10" FontSize="11"/>
+            
+                                    <TextBlock Text="Extension Attr 2" Foreground="#888" FontSize="10"/>
+                                    <TextBox Name="lblExtAttr2" Text="N/A" BorderThickness="0,0,0,1" BorderBrush="#EEE" Background="Transparent" FontWeight="SemiBold" Margin="0,0,0,10" FontSize="11"/>
+            
+                                    <TextBlock Text="Extension Attr 3" Foreground="#888" FontSize="10"/>
+                                    <TextBox Name="lblExtAttr3" Text="N/A" BorderThickness="0,0,0,1" BorderBrush="#EEE" Background="Transparent" FontWeight="SemiBold" Margin="0,0,0,15" FontSize="11"/>
+
+                                    <Button Name="btnUpdateAttributes" Content="Update Attributes" Height="28" Background="#007ACC" Foreground="White" FontSize="10" FontWeight="Bold">
+                                        <Button.Resources><Style TargetType="Border"><Setter Property="CornerRadius" Value="4"/></Style></Button.Resources>
+                                    </Button>
+                                </StackPanel>
+                            </Border>
+                        </Border>
+                        <Border Background="White" CornerRadius="12">
+                            <Border.Effect><DropShadowEffect BlurRadius="10" Opacity="0.05"/></Border.Effect>
+                            <Border Padding="20">
+                                <StackPanel>
+                                    <TextBlock Text="Account Activity" FontWeight="Bold" Margin="0,0,0,12"/>
+                                    <TextBlock Text="Password Last Set" Foreground="#888" FontSize="10"/>
+                                    <TextBox Name="lblPwdLastSet" Text="N/A" IsReadOnly="True" BorderThickness="0" Background="Transparent" FontWeight="SemiBold" Margin="0,0,0,7" FontSize="11"/>
+                                    <TextBlock Text="Last Login" Foreground="#888" FontSize="10"/>
+                                    <TextBox Name="lblLastLogin" Text="N/A" IsReadOnly="True" BorderThickness="0" Background="Transparent" FontWeight="SemiBold" Margin="0,0,0,7" FontSize="11"/>
+                                    <TextBlock Text="Last Bad Login" Foreground="#888" FontSize="10"/>
+                                    <TextBox Name="lblLastBadLogin" Text="N/A" IsReadOnly="True" BorderThickness="0" Background="Transparent" FontWeight="SemiBold" Margin="0,0,0,7" FontSize="11"/>
+                                    <TextBlock Text="Last Modified" Foreground="#888" FontSize="10"/>
+                                    <TextBox Name="lblModified" Text="N/A" IsReadOnly="True" BorderThickness="0" Background="Transparent" FontWeight="SemiBold" Margin="0,0,0,7" FontSize="11"/>
+                                    <TextBlock Text="Bad Password Count" Foreground="#888" FontSize="10"/>
+                                    <TextBox Name="lblBadPasswordCount" Text="N/A" IsReadOnly="True" BorderThickness="0" Background="Transparent" FontWeight="SemiBold" FontSize="11"/>
+                                </StackPanel>
+                            </Border>
+                        </Border>
+                    </StackPanel>
+                </Grid>
+
+                <Grid Grid.Row="3" Name="userGroupsArea" Margin="25" Visibility="Collapsed">
+                    <Border Background="White" CornerRadius="12" VerticalAlignment="Stretch">
+                        <Border.Effect><DropShadowEffect BlurRadius="15" Opacity="0.1" ShadowDepth="4"/></Border.Effect>
+                        <Border Padding="20">
+                            <StackPanel>
+                                <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
+                                    <Border CornerRadius="15" Background="#F1F1F1" Width="320" Height="35" Padding="10,0">
+                                        <TextBox Name="txtAddGroupName" BorderThickness="0" Background="Transparent" VerticalContentAlignment="Center" Text="Enter group name to add..." Foreground="Gray"/>
+                                    </Border>
+                                    <Button Name="btnAddUserGroup" Content="Add to Group" Margin="10,0" Width="120" Height="35" Background="#28a745" Foreground="White">
+                                        <Button.Resources><Style TargetType="Border"><Setter Property="CornerRadius" Value="5"/></Style></Button.Resources>
+                                    </Button>
+                                    <Button Name="btnRemoveUserGroup" Content="Remove Selected" Margin="10,0" Width="130" Height="35" Background="#dc3545" Foreground="White">
+                                        <Button.Resources><Style TargetType="Border"><Setter Property="CornerRadius" Value="5"/></Style></Button.Resources>
+                                    </Button>
+                                </StackPanel>
+                                <TextBlock Name="lblGroupActionError" Text="? Error" Foreground="#D13438" FontSize="12" FontWeight="SemiBold" Margin="0,0,0,10" Visibility="Collapsed"/>
+                                <ListView Name="listUserGroups" Height="270" BorderBrush="#E5E5E5">
+                                    <ListView.View>
+                                        <GridView>
+                                            <GridViewColumn Header="Group Name" DisplayMemberBinding="{Binding GroupName}" Width="700"/>
+                                        </GridView>
+                                    </ListView.View>
+                                </ListView>
+                                <TextBlock Name="lblGroupCount" Text="Total Groups: 0" Foreground="#666" Margin="0,10,0,0" FontStyle="Italic"/>
+                            </StackPanel>
+                        </Border>
+                    </Border>
+                </Grid>
+
+                <Grid Grid.Row="3" Name="userAppsArea" Margin="25" Visibility="Collapsed">
+                    <Grid.Resources>
+                        <Style TargetType="Button">
+                            <Setter Property="Height" Value="30"/>
+                            <Setter Property="Margin" Value="2"/>
+                            <Setter Property="FontSize" Value="11"/>
+                            <Setter Property="FontWeight" Value="SemiBold"/>
+                            <Setter Property="Background" Value="#F8F9FA"/>
+                            <Setter Property="Foreground" Value="#495057"/>
+                            <Setter Property="BorderBrush" Value="#DEE2E6"/>
+                            <Setter Property="Cursor" Value="Hand"/>
+                            <Style.Resources>
+                                <Style TargetType="Border">
+                                    <Setter Property="CornerRadius" Value="6"/>
+                                </Style>
+                            </Style.Resources>
+                        </Style>
+                    </Grid.Resources>
+
+                    <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+                        <WrapPanel>
+
+                            <Border Width="230" Margin="0,0,20,20" Background="White" CornerRadius="12" VerticalAlignment="Top">
+                                <Border.Effect><DropShadowEffect BlurRadius="10" Opacity="0.08" ShadowDepth="2"/></Border.Effect>
+                                <StackPanel>
+                                    <Border Name="brdTruxHeader" Background="#C6EFCE" CornerRadius="12,12,0,0" Padding="15,10">
+                                        <Grid>
+                                            <StackPanel>
+                                                <TextBlock Name="txtTruxTitle" Text="Trux" FontWeight="Bold" FontSize="14" Foreground="#006100"/>
+                                                <TextBlock Name="txtTruxVersion" Text="No Access" FontSize="10" Foreground="#006100"/>
+                                            </StackPanel>
+                                            <TextBlock Name="txtTruxStatusIcon" Text="&#xE73E;" FontFamily="Segoe MDL2 Assets" HorizontalAlignment="Right" VerticalAlignment="Center" Foreground="#006100" FontWeight="Bold"/>
+                                        </Grid>
+                                    </Border>
+                                    <Border Padding="15">
+                                        <StackPanel>
+                                            <TextBlock Text="Groups:" FontSize="11" FontWeight="Bold" Foreground="#888" Margin="0,0,0,8"/>
+                                            <ItemsControl Name="listTruxStatus" FontSize="11" Margin="0,0,0,10"/>
+                                            <UniformGrid Columns="2">
+                                                <Button Name="btnToggleTruxAWS" Content="Add AWS"/>
+                                                <Button Name="btnToggleTruxMand" Content="Add Trux Group"/>
+                                            </UniformGrid>
+                                        </StackPanel>
+                                    </Border>
+                                </StackPanel>
+                            </Border>
+
+                            <Border Width="230" Margin="0,0,20,20" Background="White" CornerRadius="12" VerticalAlignment="Top">
+                                <Border.Effect><DropShadowEffect BlurRadius="10" Opacity="0.08" ShadowDepth="2"/></Border.Effect>
+                                <StackPanel>
+                                    <Border Name="brdTowerHeader" Background="#C6EFCE" CornerRadius="12,12,0,0" Padding="15,10">
+                                        <Grid>
+                                            <StackPanel>
+                                                <TextBlock Name="txtTowerTitle" Text="Tower" FontWeight="Bold" FontSize="14" Foreground="#006100"/>
+                                                <TextBlock Name="txtTowerVersion" Text="V (FS1)" FontSize="10" Foreground="#006100"/>
+                                            </StackPanel>
+                                            <TextBlock Name="txtTowerStatusIcon" Text="&#xE73E;" FontFamily="Segoe MDL2 Assets" HorizontalAlignment="Right" VerticalAlignment="Center" Foreground="#006100" FontWeight="Bold"/>
+                                        </Grid>
+                                    </Border>
+                                    <Border Padding="15">
+                                        <StackPanel>
+                                            <TextBlock Text="Groups:" FontSize="11" FontWeight="Bold" Foreground="#888" Margin="0,0,0,8"/>
+                                            <ItemsControl Name="listTowerStatus" FontSize="11" Margin="0,0,0,10"/>
+                                            <UniformGrid Columns="2">
+                                                <Button Name="btnToggleTowerAWS" Content="Add AWS"/>
+                                            </UniformGrid>
+                                        </StackPanel>
+                                    </Border>
+                                </StackPanel>
+                            </Border>
+
+                            <Border Width="230" Margin="0,0,20,20" Background="White" CornerRadius="12" VerticalAlignment="Top">
+                                <Border.Effect><DropShadowEffect BlurRadius="10" Opacity="0.08" ShadowDepth="2"/></Border.Effect>
+                                <StackPanel>
+                                    <Border Name="brdOMSHeader" Background="#FFC7CE" CornerRadius="12,12,0,0" Padding="15,10">
+                                        <Grid>
+                                            <StackPanel>
+                                                <TextBlock Name="txtOMSTitle" Text="OMS" FontWeight="Bold" FontSize="14" Foreground="#9C0006"/>
+                                                <TextBlock Name="txtOMSVersion" Text="No Access" FontSize="10" Foreground="#9C0006"/>
+                                            </StackPanel>
+                                            <TextBlock Name="txtOMSStatusIcon" Text="&#xE711;" FontFamily="Segoe MDL2 Assets" HorizontalAlignment="Right" VerticalAlignment="Center" Foreground="#9C0006" FontWeight="Bold"/>
+                                        </Grid>
+                                    </Border>
+                                    <Border Padding="15">
+                                        <StackPanel>
+                                            <TextBlock Text="Groups:" FontSize="11" FontWeight="Bold" Foreground="#888" Margin="0,0,0,8"/>
+                                            <ItemsControl Name="listOMSStatus" FontSize="11" Margin="0,0,0,10"/>
+                                            <UniformGrid Columns="2">
+                                                <Button Name="btnToggleOMSV30" Content="Add V30"/>
+                                                <Button Name="btnToggleOMSV30DEV" Content="Add V30DEV"/>
+                                            </UniformGrid>
+                                        </StackPanel>
+                                    </Border>
+                                </StackPanel>
+                            </Border>
+
+                            <Border Width="230" Margin="0,0,20,20" Background="White" CornerRadius="12" VerticalAlignment="Top">
+                                <Border.Effect><DropShadowEffect BlurRadius="10" Opacity="0.08" ShadowDepth="2"/></Border.Effect>
+                                <StackPanel>
+                                    <Border Name="brdM5Header" Background="#FFC7CE" CornerRadius="12,12,0,0" Padding="15,10">
+                                        <Grid>
+                                            <StackPanel>
+                                                <TextBlock Name="txtM5Title" Text="M5" FontWeight="Bold" FontSize="14" Foreground="#9C0006"/>
+                                                <TextBlock Name="txtM5Version" Text="No Access" FontSize="10" Foreground="#9C0006"/>
+                                            </StackPanel>
+                                            <TextBlock Name="txtM5StatusIcon" Text="&#xE711;" FontFamily="Segoe MDL2 Assets" HorizontalAlignment="Right" VerticalAlignment="Center" Foreground="#9C0006" FontWeight="Bold"/>
+                                        </Grid>
+                                    </Border>
+                                    <Border Padding="15">
+                                        <StackPanel>
+                                            <TextBlock Text="Groups:" FontSize="11" FontWeight="Bold" Foreground="#888" Margin="0,0,0,8"/>
+                                            <ItemsControl Name="listM5Status" FontSize="11" Margin="0,0,0,10"/>
+                                            <UniformGrid Columns="2">
+                                                <Button Name="btnToggleM5US" Content="Add US"/>
+                                                <Button Name="btnToggleM5CA" Content="Add CA"/>
+                                            </UniformGrid>
+                                        </StackPanel>
+                                    </Border>
+                                </StackPanel>
+                            </Border>
+
+                            <Border Width="230" Margin="0,0,20,20" Background="White" CornerRadius="12" VerticalAlignment="Top">
+                                <Border.Effect><DropShadowEffect BlurRadius="10" Opacity="0.08" ShadowDepth="2"/></Border.Effect>
+                                <StackPanel>
+                                    <Border Name="brdCieHeader" Background="#FFC7CE" CornerRadius="12,12,0,0" Padding="15,10">
+                                        <Grid>
+                                            <StackPanel>
+                                                <TextBlock Name="txtCieTitle" Text="CieTrade" FontWeight="Bold" FontSize="14" Foreground="#9C0006"/>
+                                                <TextBlock Name="txtCieVersion" Text="No Access" FontSize="10" Foreground="#9C0006"/>
+                                            </StackPanel>
+                                            <TextBlock Name="txtCieStatusIcon" Text="&#xE711;" FontFamily="Segoe MDL2 Assets" HorizontalAlignment="Right" VerticalAlignment="Center" Foreground="#9C0006" FontWeight="Bold"/>
+                                        </Grid>
+                                    </Border>
+                                    <Border Padding="15">
+                                        <StackPanel>
+                                            <TextBlock Text="Groups:" FontSize="11" FontWeight="Bold" Foreground="#888" Margin="0,0,0,8"/>
+                                            <ItemsControl Name="listCieStatus" FontSize="11" Margin="0,0,0,10"/>
+                                            <UniformGrid Columns="2">
+                                                <Button Name="btnToggleCieAWS" Content="Add AWS"/>
+                                                <Button Name="btnToggleCieScale1" Content="Add Scale 1"/>
+                                                <Button Name="btnToggleCieScale2" Content="Add Scale 2"/>
+                                            </UniformGrid>
+                                        </StackPanel>
+                                    </Border>
+                                </StackPanel>
+                            </Border>
+
+                            <Border Width="230" Margin="0,0,20,20" Background="White" CornerRadius="12" VerticalAlignment="Top">
+                                <Border.Effect><DropShadowEffect BlurRadius="10" Opacity="0.08" ShadowDepth="2"/></Border.Effect>
+                                <StackPanel>
+                                    <Border Name="brdPCScaleHeader" Background="#FFC7CE" CornerRadius="12,12,0,0" Padding="15,10">
+                                        <Grid>
+                                            <StackPanel>
+                                                <TextBlock Name="txtPCScaleTitle" Text="PC Scale" FontWeight="Bold" FontSize="14" Foreground="#9C0006"/>
+                                                <TextBlock Name="txtPCScaleVersion" Text="No Access" FontSize="10" Foreground="#9C0006"/>
+                                            </StackPanel>
+                                            <TextBlock Name="txtPCScaleStatusIcon" Text="&#xE711;" FontFamily="Segoe MDL2 Assets" HorizontalAlignment="Right" VerticalAlignment="Center" Foreground="#9C0006" FontWeight="Bold"/>
+                                        </Grid>
+                                    </Border>
+                                    <Border Padding="15">
+                                        <StackPanel>
+                                            <TextBlock Text="Groups:" FontSize="11" FontWeight="Bold" Foreground="#888" Margin="0,0,0,8"/>
+                                            <ItemsControl Name="listPCScaleStatus" FontSize="11" Margin="0,0,0,10"/>
+                                            <UniformGrid Columns="2">
+                                                <Button Name="btnTogglePCScaleAWS" Content="Add AWS"/>
+                                            </UniformGrid>
+                                        </StackPanel>
+                                    </Border>
+                                </StackPanel>
+                            </Border>
+
+                            <Border Width="230" Margin="0,0,20,20" Background="White" CornerRadius="12" VerticalAlignment="Top">
+                                <Border.Effect><DropShadowEffect BlurRadius="10" Opacity="0.08" ShadowDepth="2"/></Border.Effect>
+                                <StackPanel>
+                                    <Border Name="brdCognosHeader" Background="#FFC7CE" CornerRadius="12,12,0,0" Padding="15,10">
+                                        <Grid>
+                                            <StackPanel>
+                                                <TextBlock Name="txtCognosTitle" Text="Cognos" FontWeight="Bold" FontSize="14" Foreground="#9C0006"/>
+                                                <TextBlock Name="txtCognosVersion" Text="No Access" FontSize="10" Foreground="#9C0006"/>
+                                            </StackPanel>
+                                            <TextBlock Name="txtCognosStatusIcon" Text="&#xE711;" FontFamily="Segoe MDL2 Assets" HorizontalAlignment="Right" VerticalAlignment="Center" Foreground="#9C0006" FontWeight="Bold"/>
+                                        </Grid>
+                                    </Border>
+                                    <Border Padding="15">
+                                        <StackPanel>
+                                            <TextBlock Text="Groups:" FontSize="11" FontWeight="Bold" Foreground="#888" Margin="0,0,0,8"/>
+                                            <ItemsControl Name="listCognosStatus" FontSize="11" Margin="0,0,0,10"/>
+                                            <UniformGrid Columns="2">
+                                                <Button Name="btnToggleCognosCTX" Content="Add CTX"/>
+                                                <Button Name="btnToggleCognosZscaler" Content="Add ZPA"/>
+                                            </UniformGrid>
+                                        </StackPanel>
+                                    </Border>
+                                </StackPanel>
+                            </Border>
+
+                        </WrapPanel>
+                    </ScrollViewer>
+                </Grid>
+
+                <Grid Grid.Row="3" Name="multipleResultsArea" Margin="25" Visibility="Collapsed">
+                    <Border Background="White" CornerRadius="12" VerticalAlignment="Top" HorizontalAlignment="Left" Width="650">
+                        <Border.Effect><DropShadowEffect BlurRadius="15" Opacity="0.1" ShadowDepth="4"/></Border.Effect>
+                        <Border Padding="20">
+                            <StackPanel>
+                                <TextBlock Text="Multiple Users Found" FontSize="18" FontWeight="Bold" Margin="0,0,0,5"/>
+                                <TextBlock Text="Please select the correct user from the list below by double-clicking:" Foreground="#666" Margin="0,0,0,15"/>
+
+                                <ListView Name="listUserResults" Height="250" BorderBrush="#E5E5E5">
+                                    <ListView.ItemContainerStyle>
+                                        <Style TargetType="ListViewItem">
+                                            <Setter Property="Foreground" Value="{Binding Color}"/>
+                                        </Style>
+                                    </ListView.ItemContainerStyle>
+                                    <ListView.View>
+                                        <GridView>
+                                            <GridViewColumn Header="Display Name" DisplayMemberBinding="{Binding DisplayName}" Width="150"/>
+                                            <GridViewColumn Header="Username" DisplayMemberBinding="{Binding SamAccountName}" Width="100"/>
+                                            <GridViewColumn Header="Email" DisplayMemberBinding="{Binding EmailAddress}" Width="200"/>
+                                            <GridViewColumn Header="Manager" DisplayMemberBinding="{Binding Manager}" Width="150"/>
+                                        </GridView>
+                                    </ListView.View>
+                                </ListView>
+
+                            </StackPanel>
+                        </Border>
+                    </Border>
+                </Grid>
+            </Grid>
+
+            <Grid Name="screenPrinterCard" Visibility="Collapsed">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/> <RowDefinition Height="80"/>   <RowDefinition Height="*"/>    </Grid.RowDefinitions>
+    
+                <StackPanel Grid.Row="0" Margin="25,15,0,15">
+                    <TextBlock Text="Printer Card Search" FontSize="24" FontWeight="Bold" Foreground="#2D2D30" FontFamily="Segoe UI"/>
+                    <TextBlock Text="Verify if a card number is currently assigned to an user." FontSize="13" Foreground="#666"/>
+                </StackPanel>
+
+                <Border Grid.Row="1" Background="White" BorderBrush="#E5E5E5" BorderThickness="0,0,0,1">
+                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="20,0">
+                        <Border CornerRadius="15" Background="#F1F1F1" Width="300" Height="35" Padding="10,0">
+                            <TextBox Name="printerCardSearch" BorderThickness="0" Background="Transparent" VerticalContentAlignment="Center" Text="Search Printer Card..." Foreground="Gray"/>
+                        </Border>
+                        <Button Name="btnSearchPrinterCard" Content="Search" Margin="10,0" Width="100" Height="35" Background="#007ACC" Foreground="White">
+                            <Button.Resources><Style TargetType="Border"><Setter Property="CornerRadius" Value="5"/></Style></Button.Resources>
+                        </Button>
+                        <TextBlock Name="lblPrinterCardError" Text="? Printer Card not found!" Foreground="#D13438" FontSize="12" FontWeight="SemiBold" Margin="25,0,0,0" Visibility="Collapsed" VerticalAlignment="Center"/>
+                    </StackPanel>
+                </Border>
+
+                <Grid Grid.Row="2" Margin="30">
+                    <StackPanel Name="printerResultCard" Visibility="Collapsed">
+                        <Border Width="450" HorizontalAlignment="Left" Background="White" CornerRadius="12">
+                            <Border.Effect><DropShadowEffect BlurRadius="15" Opacity="0.1" ShadowDepth="4"/></Border.Effect>
+                            <Border Padding="25">
+                                <StackPanel>
+                                    <TextBlock Text="1 user found" FontSize="18" FontWeight="Bold" Margin="0,0,0,15"/>
+                                    <Separator Background="#EEE" Margin="0,0,0,20"/>
+                    
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="Auto"/>
+                                            <ColumnDefinition Width="*"/>
+                                        </Grid.ColumnDefinitions>
+                                        <Grid.RowDefinitions>
+                                            <RowDefinition Height="Auto"/> 
+                                            <RowDefinition Height="10"/> <RowDefinition Height="Auto"/> 
+                                            <RowDefinition Height="10"/> <RowDefinition Height="Auto"/> 
+                                            <RowDefinition Height="10"/> <RowDefinition Height="Auto"/> 
+                                        </Grid.RowDefinitions>
+
+                                        <TextBlock Grid.Row="0" Text="Assigned To:" Foreground="#888" VerticalAlignment="Center"/>
+                                        <TextBlock Grid.Row="0" Grid.Column="1" Name="lblPrinterOwnerName" Text="N/A" FontWeight="Bold" FontSize="16" HorizontalAlignment="Right"/>
+
+                                        <TextBlock Grid.Row="2" Text="Username:" Foreground="#888" VerticalAlignment="Center"/>
+                                        <TextBlock Grid.Row="2" Grid.Column="1" Name="lblPrinterOwnerSam" Text="N/A" HorizontalAlignment="Right"/>
+
+                                        <TextBlock Grid.Row="4" Text="Extension Attr 2:" Foreground="#888" VerticalAlignment="Center"/>
+                                        <TextBlock Grid.Row="4" Grid.Column="1" Name="lblPrinterOwnerAttr2" Text="N/A" HorizontalAlignment="Right"/>
+
+                                        <TextBlock Grid.Row="6" Text="Extension Attr 3:" Foreground="#888" VerticalAlignment="Center"/>
+                                        <TextBlock Grid.Row="6" Grid.Column="1" Name="lblPrinterOwnerAttr3" Text="N/A" HorizontalAlignment="Right"/>
+                                    </Grid>
+                    
+                                    <Button Name="btnGoToUserProfile" Content="Open User Profile" Margin="0,20,0,0" Height="30" Background="#F1F1F1"/>
+                                </StackPanel>
+                            </Border>
+                        </Border>
+                    </StackPanel>
+
+                    <StackPanel Name="printerMultipleArea" Visibility="Collapsed">
+                        <TextBlock Text="Multiple users found" FontSize="18" FontWeight="Bold" Margin="0,0,0,15"/>
+                        <ListView Name="listPrinterResults" Height="200" BorderBrush="#E5E5E5">
+                            <ListView.View>
+                                <GridView>
+                                    <GridViewColumn Header="Name" DisplayMemberBinding="{Binding DisplayName}" Width="200"/>
+                                    <GridViewColumn Header="Username" DisplayMemberBinding="{Binding SamAccountName}" Width="150"/>
+                                    <GridViewColumn Header="Extension Attr 2" DisplayMemberBinding="{Binding extensionAttribute2}" Width="150"/>
+                                    <GridViewColumn Header="Extension Attr 3" DisplayMemberBinding="{Binding extensionAttribute3}" Width="150"/>
+                                </GridView>
+                            </ListView.View>
+                        </ListView>
+                    </StackPanel>
+                </Grid>
+            </Grid>
+
+            <Grid Name="screenEmployeeID" Visibility="Collapsed">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/> <RowDefinition Height="80"/>   <RowDefinition Height="*"/>    </Grid.RowDefinitions>
+    
+                <StackPanel Grid.Row="0" Margin="25,15,0,15">
+                    <TextBlock Text="Employee ID Search" FontSize="24" FontWeight="Bold" Foreground="#2D2D30" FontFamily="Segoe UI"/>
+                    <TextBlock Text="Search users by Employee ID." FontSize="13" Foreground="#666"/>
+                </StackPanel>
+
+                <Border Grid.Row="1" Background="White" BorderBrush="#E5E5E5" BorderThickness="0,0,0,1">
+                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="20,0">
+                        <Border CornerRadius="15" Background="#F1F1F1" Width="300" Height="35" Padding="10,0">
+                            <TextBox Name="employeeIDSearch" BorderThickness="0" Background="Transparent" VerticalContentAlignment="Center" Text="Search Employee ID..." Foreground="Gray"/>
+                        </Border>
+                        <Button Name="btnSearchEmployeeID" Content="Search" Margin="10,0" Width="100" Height="35" Background="#007ACC" Foreground="White">
+                            <Button.Resources><Style TargetType="Border"><Setter Property="CornerRadius" Value="5"/></Style></Button.Resources>
+                        </Button>
+                        <TextBlock Name="lblEmployeeIDError" Text="? Employee ID not found!" Foreground="#D13438" FontSize="12" FontWeight="SemiBold" Margin="25,0,0,0" Visibility="Collapsed" VerticalAlignment="Center"/>
+                    </StackPanel>
+                </Border>
+
+                <Grid Grid.Row="2" Margin="30">
+                    <StackPanel Name="employeeIDResultCard" Visibility="Collapsed">
+                        <Border Width="450" HorizontalAlignment="Left" Background="White" CornerRadius="12">
+                            <Border.Effect><DropShadowEffect BlurRadius="15" Opacity="0.1" ShadowDepth="4"/></Border.Effect>
+                            <Border Padding="25">
+                                <StackPanel>
+                                    <TextBlock Text="1 user found" FontSize="18" FontWeight="Bold" Margin="0,0,0,15"/>
+                                    <Separator Background="#EEE" Margin="0,0,0,20"/>
+                    
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="Auto"/>
+                                            <ColumnDefinition Width="*"/>
+                                        </Grid.ColumnDefinitions>
+                                        <Grid.RowDefinitions>
+                                            <RowDefinition Height="Auto"/> 
+                                            <RowDefinition Height="10"/> <RowDefinition Height="Auto"/> 
+                                            <RowDefinition Height="10"/> <RowDefinition Height="Auto"/> 
+                                            <RowDefinition Height="10"/> <RowDefinition Height="Auto"/> 
+                                        </Grid.RowDefinitions>
+
+                                        <TextBlock Grid.Row="0" Text="Display Name:" Foreground="#888" VerticalAlignment="Center"/>
+                                        <TextBlock Grid.Row="0" Grid.Column="1" Name="lblEmployeeName" Text="N/A" FontWeight="Bold" FontSize="16" HorizontalAlignment="Right"/>
+
+                                        <TextBlock Grid.Row="2" Text="Username:" Foreground="#888" VerticalAlignment="Center"/>
+                                        <TextBlock Grid.Row="2" Grid.Column="1" Name="lblEmployeeSam" Text="N/A" HorizontalAlignment="Right"/>
+
+                                        <TextBlock Grid.Row="4" Text="Employee ID:" Foreground="#888" VerticalAlignment="Center"/>
+                                        <TextBlock Grid.Row="4" Grid.Column="1" Name="lblEmployeeNumber" Text="N/A" HorizontalAlignment="Right"/>
+                                    </Grid>
+                    
+                                    <Button Name="btnGoToEmployeeProfile" Content="Open User Profile" Margin="0,20,0,0" Height="30" Background="#F1F1F1"/>
+                                </StackPanel>
+                            </Border>
+                        </Border>
+                    </StackPanel>
+
+                    <StackPanel Name="employeeMultipleArea" Visibility="Collapsed">
+                        <TextBlock Text="Multiple users found" FontSize="18" FontWeight="Bold" Margin="0,0,0,15"/>
+                        <ListView Name="listemployeeResults" Height="200" BorderBrush="#E5E5E5">
+                            <ListView.View>
+                                <GridView>
+                                    <GridViewColumn Header="Name" DisplayMemberBinding="{Binding DisplayName}" Width="200"/>
+                                    <GridViewColumn Header="Username" DisplayMemberBinding="{Binding SamAccountName}" Width="150"/>
+                                    <GridViewColumn Header="Extension Attr 2" DisplayMemberBinding="{Binding extensionAttribute2}" Width="150"/>
+                                    <GridViewColumn Header="Extension Attr 3" DisplayMemberBinding="{Binding extensionAttribute3}" Width="150"/>
+                                </GridView>
+                            </ListView.View>
+                        </ListView>
+                    </StackPanel>
+                </Grid>
+            </Grid>
+
+            <Grid Name="screenPaths" Visibility="Collapsed">
+                <Grid.Resources>
+                    <Style x:Key="PathCard" TargetType="Border">
+                        <Setter Property="Width" Value="230"/>
+                        <Setter Property="Margin" Value="0,0,20,20"/>
+                        <Setter Property="Background" Value="White"/>
+                        <Setter Property="CornerRadius" Value="12"/>
+                        <Setter Property="Effect">
+                            <Setter.Value>
+                                <DropShadowEffect BlurRadius="10" Opacity="0.08" ShadowDepth="2"/>
+                            </Setter.Value>
+                        </Setter>
+                    </Style>
+                    <Style TargetType="Button">
+                        <Setter Property="Height" Value="30"/>
+                        <Setter Property="Background" Value="#F8F9FA"/>
+                        <Setter Property="Cursor" Value="Hand"/>
+                        <Style.Resources>
+                            <Style TargetType="Border">
+                                <Setter Property="CornerRadius" Value="6"/>
+                            </Style>
+                        </Style.Resources>
+                    </Style>
+                </Grid.Resources>
+
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+    
+                <StackPanel Grid.Row="0" Margin="25,15,0,35">
+                    <TextBlock Text="Network Paths" FontSize="24" FontWeight="Bold" Foreground="#2D2D30"/>
+                    <TextBlock Text="Quick access to GFL network locations." FontSize="13" Foreground="#666"/>
+                </StackPanel>
+
+                <ScrollViewer Grid.Row="1" Margin="25,0,0,0" VerticalScrollBarVisibility="Auto">
+                    <WrapPanel Name="panelPathCards">
+            
+                        <Border Style="{StaticResource PathCard}">
+                            <StackPanel>
+                                <Border Background="#007ACC" CornerRadius="12,12,0,0" Padding="15,10">
+                                    <TextBlock Text="S Drive" FontWeight="Bold" Foreground="White"/>
+                                </Border>
+                                <Border Padding="15">
+                                    <StackPanel>
+                                        <TextBox Text="\\gfl.local\dfs" IsReadOnly="True" BorderThickness="0" Background="Transparent" FontSize="11" Foreground="#444" TextWrapping="Wrap" Height="40"/>
+                                        <Button Name="btnOpenSDrive" Content="Open in Explorer" Tag="\\gfl.local\dfs"/>
+                                    </StackPanel>
+                                </Border>
+                            </StackPanel>
+                        </Border>
+
+                        <Border Style="{StaticResource PathCard}">
+                            <StackPanel>
+                                <Border Background="#28A745" CornerRadius="12,12,0,0" Padding="15,10">
+                                    <TextBlock Text="K Drive" FontWeight="Bold" Foreground="White"/>
+                                </Border>
+                                <Border Padding="15">
+                                    <StackPanel>
+                                        <TextBox Text="\\gfl.local\dfs\GFL US SE" IsReadOnly="True" BorderThickness="0" Background="Transparent" FontSize="11" Foreground="#444" TextWrapping="Wrap" Height="40"/>
+                                        <Button Name="btnOpenKDrive" Content="Open in Explorer" Tag="\\gfl.local\dfs\GFL US SE"/>
+                                    </StackPanel>
+                                </Border>
+                            </StackPanel>
+                        </Border>
+
+                        <Border Style="{StaticResource PathCard}">
+                            <StackPanel>
+                                <Border Background="#6F42C1" CornerRadius="12,12,0,0" Padding="15,10">
+                                    <TextBlock Text="Z Drive" FontWeight="Bold" Foreground="White"/>
+                                </Border>
+                                <Border Padding="15">
+                                    <StackPanel>
+                                        <TextBox Text="\\gflfs4\dfs" IsReadOnly="True" BorderThickness="0" Background="Transparent" FontSize="11" Foreground="#444" TextWrapping="Wrap" Height="40"/>
+                                        <Button Name="btnOpenZDrive" Content="Open in Explorer" Tag="\\gflfs4\dfs"/>
+                                    </StackPanel>
+                                </Border>
+                            </StackPanel>
+                        </Border>
+
+                        <Border Style="{StaticResource PathCard}">
+                            <StackPanel>
+                                <Border Background="#E67E22" CornerRadius="12,12,0,0" Padding="15,10">
+                                    <TextBlock Text="FS1 Profiles" FontWeight="Bold" Foreground="White"/>
+                                </Border>
+                                <Border Padding="15">
+                                    <StackPanel>
+                                        <TextBox Text="\\gflctxfs1\userprofiles$" IsReadOnly="True" BorderThickness="0" Background="Transparent" FontSize="11" Foreground="#444" TextWrapping="Wrap" Height="40"/>
+                                        <Button Name="btnOpenFS1" Content="Open in Explorer" Tag="\\gflctxfs1\userprofiles$"/>
+                                    </StackPanel>
+                                </Border>
+                            </StackPanel>
+                        </Border>
+
+                        <Border Style="{StaticResource PathCard}">
+                            <StackPanel>
+                                <Border Background="#343A40" CornerRadius="12,12,0,0" Padding="15,10">
+                                    <TextBlock Text="FS4 Profiles" FontWeight="Bold" Foreground="White"/>
+                                </Border>
+                                <Border Padding="15">
+                                    <StackPanel>
+                                        <TextBox Text="\\gflctxfs4\userprofiles$" IsReadOnly="True" BorderThickness="0" Background="Transparent" FontSize="11" Foreground="#444" TextWrapping="Wrap" Height="40"/>
+                                        <Button Name="btnOpenFS4" Content="Open in Explorer" Tag="\\gflctxfs4\userprofiles$"/>
+                                    </StackPanel>
+                                </Border>
+                            </StackPanel>
+                        </Border>
+
+                        <Border Style="{StaticResource PathCard}">
+                            <StackPanel>
+                                <Border Background="#2ECC71" CornerRadius="12,12,0,0" Padding="15,10">
+                                    <TextBlock Text="AWS Profiles" FontWeight="Bold" Foreground="White"/>
+                                </Border>
+                                <Border Padding="15">
+                                    <StackPanel>
+                                        <TextBox Text="\\amznfsxnuwpdkp5.gfl.local\share\userprofiles" IsReadOnly="True" BorderThickness="0" Background="Transparent" FontSize="11" Foreground="#444" TextWrapping="Wrap" Height="40"/>
+                                        <Button Name="btnOpenAWS" Content="Open in Explorer" Tag="\\amznfsxnuwpdkp5.gfl.local\share\userprofiles"/>
+                                    </StackPanel>
+                                </Border>
+                            </StackPanel>
+                        </Border>
+
+                        <Border Style="{StaticResource PathCard}">
+                            <StackPanel>
+                                <Border Background="#D35400" CornerRadius="12,12,0,0" Padding="15,10">
+                                    <TextBlock Text="FollowYou Installation" FontWeight="Bold" Foreground="White"/>
+                                </Border>
+                                <Border Padding="15">
+                                    <StackPanel>
+                                        <TextBox Text="\\gfl.local\netlogon\lrs" IsReadOnly="True" BorderThickness="0" Background="Transparent" FontSize="11" Foreground="#444" TextWrapping="Wrap" Height="40"/>
+                                        <Button Name="btnOpenLRS" Content="Open in Explorer" Tag="\\gfl.local\netlogon\lrs"/>
+                                    </StackPanel>
+                                </Border>
+                            </StackPanel>
+                        </Border>
+
+                        <Border Style="{StaticResource PathCard}">
+                            <StackPanel>
+                                <Border Background="#17A2B8" CornerRadius="12,12,0,0" Padding="15,10">
+                                    <TextBlock Text="PAfE" FontWeight="Bold" Foreground="White"/>
+                                </Border>
+                                <Border Padding="15">
+                                    <StackPanel>
+                                        <TextBox Text="\\gfl.local\dfs\AppData\SFTP\GFL Cognos\PAFE" IsReadOnly="True" BorderThickness="0" Background="Transparent" FontSize="11" Foreground="#444" TextWrapping="Wrap" Height="40"/>
+                                        <Button Name="btnOpenPAFE" Content="Open in Explorer" Tag="\\gfl.local\dfs\AppData\SFTP\GFL Cognos\PAFE"/>
+                                    </StackPanel>
+                                </Border>
+                            </StackPanel>
+                        </Border>
+
+                        <Border Style="{StaticResource PathCard}">
+                            <StackPanel>
+                                <Border Background="#C0392B" CornerRadius="12,12,0,0" Padding="15,10">
+                                    <TextBlock Text="Fix GFL Wallpaper" FontWeight="Bold" Foreground="White"/>
+                                </Border>
+                                <Border Padding="15">
+                                    <StackPanel>
+                                        <TextBox Text="\\gfl.local\netlogon\BGInfo" IsReadOnly="True" BorderThickness="0" Background="Transparent" FontSize="11" Foreground="#444" TextWrapping="Wrap" Height="40"/>
+                                        <Button Name="btnOpenWallpaper" Content="Open in Explorer" Tag="\\gfl.local\netlogon\BGInfo"/>
+                                    </StackPanel>
+                                </Border>
+                            </StackPanel>
+                        </Border>
+
+                    </WrapPanel>
+                </ScrollViewer>
+            </Grid>
+
+            <Grid Name="screenTier2" Visibility="Collapsed">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/> <RowDefinition Height="80"/>   <RowDefinition Height="*"/>    </Grid.RowDefinitions>
+
+                <StackPanel Grid.Row="0" Margin="25,15,0,15">
+                    <TextBlock Text="Tier 2 Lookup" FontSize="24" FontWeight="Bold" Foreground="#2D2D30" FontFamily="Segoe UI"/>
+                    <TextBlock Text="Find the Tier 2 team for a US state or CA province and compare local time with Portugal." FontSize="13" Foreground="#666"/>
+                </StackPanel>
+
+                <Border Grid.Row="1" Background="White" BorderBrush="#E5E5E5" BorderThickness="0,0,0,1">
+                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="20,0">
+                        <StackPanel Margin="0,0,20,0">
+                            <TextBlock Text="Reference Region" Foreground="#888" FontSize="11" Margin="0,0,0,3"/>
+                            <ComboBox Name="cbT2Origin" Width="170" Height="30" VerticalContentAlignment="Center"/>
+                        </StackPanel>
+                        <StackPanel Margin="0,0,20,0">
+                            <TextBlock Text="Country" Foreground="#888" FontSize="11" Margin="0,0,0,3"/>
+                            <ComboBox Name="cbT2Country" Width="150" Height="30" VerticalContentAlignment="Center"/>
+                        </StackPanel>
+                        <StackPanel Margin="0,0,20,0">
+                            <TextBlock Text="State / Province" Foreground="#888" FontSize="11" Margin="0,0,0,3"/>
+                            <ComboBox Name="cbT2State" Width="200" Height="30" VerticalContentAlignment="Center" IsEnabled="False"/>
+                        </StackPanel>
+                        <Button Name="btnT2Clear" Content="Clear" Margin="0,14,0,0" Width="80" Height="30" Background="#F1F1F1"/>
+                    </StackPanel>
+                </Border>
+
+                <StackPanel Grid.Row="2" Margin="30">
+                    <Border Width="520" HorizontalAlignment="Left" Background="White" CornerRadius="12">
+                        <Border.Effect><DropShadowEffect BlurRadius="15" Opacity="0.1" ShadowDepth="4"/></Border.Effect>
+                        <Border Padding="25">
+                            <StackPanel>
+                                <TextBlock Text="Escalate to" Foreground="#888" FontSize="11" Margin="0,0,0,2"/>
+                                <TextBox Name="txtT2Group" Text="-" IsReadOnly="True" BorderThickness="0" Background="Transparent" FontSize="17" FontWeight="Bold" TextWrapping="Wrap"/>
+                                <Separator Background="#EEE" Margin="0,15,0,15"/>
+
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto"/>
+                                        <ColumnDefinition Width="*"/>
+                                    </Grid.ColumnDefinitions>
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="10"/> <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="10"/> <RowDefinition Height="Auto"/>
+                                    </Grid.RowDefinitions>
+
+                                    <TextBlock Grid.Row="0" Text="Time Difference:" Foreground="#888" VerticalAlignment="Center"/>
+                                    <TextBox Grid.Row="0" Grid.Column="1" Name="txtT2Diff" Text="-" IsReadOnly="True" BorderThickness="0" Background="Transparent" FontWeight="SemiBold" HorizontalContentAlignment="Right"/>
+
+                                    <TextBlock Grid.Row="2" Text="Timezone:" Foreground="#888" VerticalAlignment="Center"/>
+                                    <TextBox Grid.Row="2" Grid.Column="1" Name="txtT2Zone" Text="-" IsReadOnly="True" BorderThickness="0" Background="Transparent" HorizontalContentAlignment="Right"/>
+
+                                    <TextBlock Grid.Row="4" Text="Current Time There:" Foreground="#888" VerticalAlignment="Center"/>
+                                    <TextBox Grid.Row="4" Grid.Column="1" Name="txtT2Now" Text="-" IsReadOnly="True" BorderThickness="0" Background="Transparent" HorizontalContentAlignment="Right"/>
+                                </Grid>
+                            </StackPanel>
+                        </Border>
+                    </Border>
+
+                    <Border Width="520" HorizontalAlignment="Left" Background="White" CornerRadius="12" Margin="0,20,0,0">
+                        <Border.Effect><DropShadowEffect BlurRadius="15" Opacity="0.1" ShadowDepth="4"/></Border.Effect>
+                        <Border Padding="25">
+                            <StackPanel>
+                                <TextBlock Text="Synchronized Clocks" FontSize="16" FontWeight="Bold" Margin="0,0,0,2"/>
+                                <TextBlock Text="Type a time (HH:mm) in either box and the other one updates." Foreground="#888" FontSize="11" Margin="0,0,0,15"/>
+
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="50"/>
+                                        <ColumnDefinition Width="*"/>
+                                    </Grid.ColumnDefinitions>
+
+                                    <StackPanel Grid.Column="0">
+                                        <TextBlock Name="lblT2StateClock" Text="State Time" Foreground="#888" FontSize="11" Margin="0,0,0,3"/>
+                                        <TextBox Name="txtT2StateTime" Height="40" MaxLength="5" FontSize="22" FontFamily="Consolas" FontWeight="Bold" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" IsEnabled="False"/>
+                                    </StackPanel>
+
+                                    <TextBlock Grid.Column="1" FontFamily="Segoe MDL2 Assets" Text="&#xE8AB;" FontSize="18" Foreground="#888" HorizontalAlignment="Center" VerticalAlignment="Bottom" Margin="0,0,0,10"/>
+
+                                    <StackPanel Grid.Column="2">
+                                        <TextBlock Name="lblT2OriginClock" Text="Portugal Mainland Time" Foreground="#888" FontSize="11" Margin="0,0,0,3"/>
+                                        <TextBox Name="txtT2OriginTime" Height="40" MaxLength="5" FontSize="22" FontFamily="Consolas" FontWeight="Bold" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" IsEnabled="False"/>
+                                    </StackPanel>
+                                </Grid>
+
+                                <Button Name="btnT2Sync" Content="Reset to Current Time" Margin="0,20,0,0" Height="30" Background="#F1F1F1" IsEnabled="False"/>
+                            </StackPanel>
+                        </Border>
+                    </Border>
+                </StackPanel>
+            </Grid>
+        </Grid>
+    </Grid>
+</Window>
+"@
+
+
+### UI/SCREENS LOGIC ###
+
+try {
+    [xml]$xaml = $inputXML
+    $reader = New-Object System.Xml.XmlNodeReader $xaml
+    $window = [Windows.Markup.XamlReader]::Load($reader)
+} catch {
+    Write-Error "XAML Load Failed: $($_.Exception.Message)"
+    exit
+}
+
+$xaml.SelectNodes("//*[@*[local-name()='Name']]") | ForEach-Object {
+    $name = $_.GetAttribute("Name")
+    $var = $window.FindName($name)
+    Set-Variable -Name $name -Value $var -Scope Script
+}
+
+$txtVersion.Text = "Version Date: 09/09/2026"
+
+$global:CurrentDC = $null
+$global:MyCred = $null
+
+while ($null -eq $global:MyCred) {
+    try {
+        $cred = $null
+        $cred = Get-Credential -Message "Enter your GFL HD Credentials" -ErrorAction Stop
+        
+        if ($null -eq $cred -or [string]::IsNullOrEmpty($cred.UserName)) {
+            if ($window) { $window.Close() }
+            Exit
+        }
+        
+        $netCred = $cred.GetNetworkCredential()
+        $un = $netCred.UserName
+        $dom = $netCred.Domain
+        if ([string]::IsNullOrEmpty($dom) -or $dom -eq "gflenv.com") { 
+            $dom = "gfl.local" 
+        }
+        $cleanUser = "$dom\$un"
+        $sanitizedCred = New-Object System.Management.Automation.PSCredential($cleanUser, $cred.Password)
+
+        $null = Get-ADUser -Identity $un -Server "gfl.local" -Credential $sanitizedCred -ErrorAction Stop
+        
+        $global:MyCred = $sanitizedCred
+        Write-Host "Credentials verified successfully for $cleanUser!" -ForegroundColor Green
+
+    } catch {
+        $isCancelAction = $false
+        $currentException = $_.Exception
+        
+        while ($null -ne $currentException) {
+            if ($currentException.GetType().Name -eq "PipelineStoppedException" -or $currentException.Message -match "PipelineStopped") {
+                $isCancelAction = $true
+                break
+            }
+            $currentException = $currentException.InnerException
+        }
+
+        if ($isCancelAction) {
+            [System.Windows.MessageBox]::Show("Script execution cancelled by user.", "Exit")
+            if ($window) { $window.Close() }
+            Exit
+        }
+        
+        [System.Windows.MessageBox]::Show(
+            "Authentication Failed!`n`nThe username or password you entered is incorrect.`n`nPlease try again.", 
+            "Login Error", 
+            [System.Windows.MessageBoxButton]::OK, 
+            [System.Windows.MessageBoxImage]::Error
+        )
+    }
+}
+
+function show_screen ($screenName, $activeButton) {
+    $screenLaps.Visibility = if ($screenName -eq "screenLaps") { "Visible" } else { "Collapsed" }
+    $screenUserInfo.Visibility = if ($screenName -eq "screenUserInfo") { "Visible" } else { "Collapsed" }
+    $screenPrinterCard.Visibility = if ($screenName -eq "screenPrinterCard") { "Visible" } else { "Collapsed" }
+    $screenEmployeeID.Visibility = if ($screenName -eq "screenEmployeeID") { "Visible" } else { "Collapsed" }
+    $screenPaths.Visibility = if ($screenName -eq "screenPaths") { "Visible" } else { "Collapsed" }
+    $screenTier2.Visibility = if ($screenName -eq "screenTier2") { "Visible" } else { "Collapsed" }
+    
+    $allNavButtons = @($btnLaps, $btnUserInfo, $btnPrinterCard, $btnEmployeeID, $btnPaths, $btnTier2)
+
+    foreach ($btn in $allNavButtons) {
+        $btn.Background = if ($btn.Name -eq $activeButton.Name) { [System.Windows.Media.Brushes]::DimGray } else { [System.Windows.Media.Brushes]::Transparent }
+    }
+}
+
+$btnLaps.Add_Click({ show_screen "screenLaps" $btnLaps })
+$btnUserInfo.Add_Click({ show_screen "screenUserInfo" $btnUserInfo })
+$btnPrinterCard.Add_Click({ show_screen "screenPrinterCard" $btnPrinterCard })
+$btnEmployeeID.Add_Click({ show_screen "screenEmployeeID" $btnEmployeeID })
+$btnPaths.Add_Click({ show_screen "screenPaths" $btnPaths })
+$btnTier2.Add_Click({ show_screen "screenTier2" $btnTier2 })
+
+### LAPS LOGIC ###
+
+### PING WINDOW LOGIC ###
+
+$global:PingWin   = $null   # hashtable of window + controls while the window is open
+$global:PingTimer = $null
+$global:PingTask  = $null
+$global:PingObj   = $null
+
+$global:PingXaml = @'
+<Window xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Ping" Width="420" Height="420" MinWidth="360" MinHeight="340"
+        Background="#F3F3F3" FontFamily="Segoe UI" ShowActivated="False" WindowStartupLocation="Manual">
+    <Grid Margin="20">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <StackPanel Grid.Row="0">
+            <TextBlock Name="pingTitle" Text="-" FontSize="20" FontWeight="Bold" Foreground="#2D2D30"/>
+            <TextBlock Name="pingSubtitle" Text="" FontSize="11" Foreground="#888"/>
+        </StackPanel>
+
+        <Border Grid.Row="1" Name="pingStatusBox" Background="#888888" CornerRadius="8" Margin="0,15,0,0" Padding="15,12">
+            <StackPanel>
+                <TextBlock Name="pingStatus" Text="CHECKING..." FontSize="22" FontWeight="Bold" Foreground="White"/>
+                <TextBlock Name="pingDetail" Text="" FontSize="12" Foreground="White" Margin="0,2,0,0"/>
+            </StackPanel>
+        </Border>
+
+        <TextBlock Grid.Row="2" Name="pingStats" Text="Sent: 0   Replies: 0   Lost: 0" FontSize="11" Foreground="#666" Margin="0,10,0,8"/>
+
+        <TextBox Grid.Row="3" Name="pingLog" IsReadOnly="True" FontFamily="Consolas" FontSize="11" Background="White" BorderBrush="#DDD"
+                 VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto" TextWrapping="NoWrap"/>
+
+        <StackPanel Grid.Row="4" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,12,0,0">
+            <Button Name="pingToggle" Content="Stop" Width="90" Height="30" Margin="0,0,10,0" Background="#F1F1F1"/>
+            <Button Name="pingClose" Content="Close" Width="90" Height="30" Background="#F1F1F1"/>
+        </StackPanel>
+    </Grid>
+</Window>
+'@
+
+function set_ping_color ($hex) {
+    $global:PingWin.StatusBox.Background = [System.Windows.Media.BrushConverter]::new().ConvertFromString($hex)
+}
+
+function reset_ping_state ($target, $tag) {
+    $global:PingTask  = $null
+    $global:PingSent  = 0
+    $global:PingOk    = 0
+    $global:PingLines = New-Object System.Collections.Generic.List[string]
+    $global:PingTarget = $target
+
+    $w = $global:PingWin
+    $w.Window.Title    = "Ping - $tag"
+    $w.Title.Text      = $tag
+    $w.Subtitle.Text   = if ($target -ne $tag) { "Pinging $target" } else { "Pinging $target (continuous)" }
+    $w.Status.Text     = "CHECKING..."
+    $w.Detail.Text     = ""
+    $w.Stats.Text      = "Sent: 0   Replies: 0   Lost: 0"
+    $w.Log.Text        = ""
+    set_ping_color "#888888"
+}
+
+function add_ping_line ($text) {
+    $global:PingLines.Add("[$((Get-Date).ToString('HH:mm:ss'))] $text")
+    while ($global:PingLines.Count -gt 100) { $global:PingLines.RemoveAt(0) }
+    $global:PingWin.Log.Text = ($global:PingLines -join "`r`n")
+    $global:PingWin.Log.ScrollToEnd()
+}
+
+# Non-blocking: each tick either collects the finished ping or starts a new one, so the UI never freezes
+function ping_tick {
+    if (-not $global:PingWin) { return }
+    $w = $global:PingWin
+
+    if ($global:PingTask) {
+        if (-not $global:PingTask.IsCompleted) { return }
+        $task = $global:PingTask
+        $global:PingTask = $null
+        $global:PingSent++
+
+        if ($task.IsFaulted) {
+            $msg = $task.Exception.GetBaseException().Message
+            $w.Status.Text = "OFFLINE"
+            $w.Detail.Text = $msg
+            set_ping_color "#D13438"
+            add_ping_line $msg
+        } else {
+            $r = $task.Result
+            if ($r.Status -eq [System.Net.NetworkInformation.IPStatus]::Success) {
+                $global:PingOk++
+                $w.Status.Text = "ONLINE"
+                $w.Detail.Text = "$($r.Address)  -  $($r.RoundtripTime) ms"
+                set_ping_color "#2E9E5B"
+                add_ping_line "Reply from $($r.Address): $($r.RoundtripTime) ms"
+            } else {
+                $w.Status.Text = "OFFLINE"
+                $w.Detail.Text = "$($r.Status)"
+                set_ping_color "#D13438"
+                add_ping_line "$($r.Status)"
+            }
+        }
+        $lost = $global:PingSent - $global:PingOk
+        $w.Stats.Text = "Sent: $($global:PingSent)   Replies: $($global:PingOk)   Lost: $lost"
+    }
+
+    try {
+        $global:PingTask = $global:PingObj.SendPingAsync($global:PingTarget, 1000)
+    } catch {
+        $w.Status.Text = "ERROR"
+        $w.Detail.Text = $_.Exception.Message
+    }
+}
+
+function stop_ping {
+    if ($global:PingTimer) { $global:PingTimer.Stop() }
+}
+
+function show_ping_window ($target, $tag) {
+    # Window already open: just retarget it
+    if ($global:PingWin) {
+        reset_ping_state $target $tag
+        $global:PingTimer.Start()
+        $global:PingWin.Toggle.Content = "Stop"
+        ping_tick
+        return
+    }
+
+    $reader = New-Object System.Xml.XmlNodeReader ([xml]$global:PingXaml)
+    $win = [Windows.Markup.XamlReader]::Load($reader)
+
+    $global:PingWin = @{
+        Window    = $win
+        Title     = $win.FindName("pingTitle")
+        Subtitle  = $win.FindName("pingSubtitle")
+        StatusBox = $win.FindName("pingStatusBox")
+        Status    = $win.FindName("pingStatus")
+        Detail    = $win.FindName("pingDetail")
+        Stats     = $win.FindName("pingStats")
+        Log       = $win.FindName("pingLog")
+        Toggle    = $win.FindName("pingToggle")
+        Close     = $win.FindName("pingClose")
+    }
+    $global:PingObj = New-Object System.Net.NetworkInformation.Ping
+
+    $win.Owner = $window
+    $win.Left  = $window.Left + $window.ActualWidth + 10
+    $win.Top   = $window.Top
+    # Keep it on screen if the main window is already at the right edge
+    $maxLeft = [System.Windows.SystemParameters]::VirtualScreenWidth - $win.Width
+    if ($win.Left -gt $maxLeft) { $win.Left = [Math]::Max(0, $maxLeft) }
+
+    $global:PingTimer = New-Object System.Windows.Threading.DispatcherTimer
+    $global:PingTimer.Interval = [TimeSpan]::FromSeconds(1)
+    $global:PingTimer.Add_Tick({ ping_tick })
+
+    $global:PingWin.Toggle.Add_Click({
+        if ($global:PingTimer.IsEnabled) {
+            stop_ping
+            $global:PingWin.Toggle.Content = "Resume"
+            add_ping_line "Stopped"
+        } else {
+            $global:PingTask = $null
+            $global:PingTimer.Start()
+            $global:PingWin.Toggle.Content = "Stop"
+            ping_tick
+        }
+    })
+    $global:PingWin.Close.Add_Click({ $global:PingWin.Window.Close() })
+    $win.Add_Closed({
+        stop_ping
+        $global:PingTask  = $null
+        $global:PingTimer = $null
+        $global:PingWin   = $null
+        if ($global:PingObj) { $global:PingObj.Dispose(); $global:PingObj = $null }
+    })
+
+    reset_ping_state $target $tag
+    $win.Show()
+    $global:PingTimer.Start()
+    ping_tick
+}
+
+function search_asset_tag {
+    $tag = $assetTagSearch.Text.Trim()
+
+    $lblLapsError.Visibility = "Collapsed"
+    $lapsResultCard.Visibility = "Collapsed"
+
+    if ($tag -and $tag -ne "Search Asset Tag...") {
+        $pingTarget = $tag
+        try {
+            if (-not $global:CurrentDC) { $global:CurrentDC = (Get-ADDomainController).HostName }
+
+            $info = Get-LapsADPassword -Identity $tag -AsPlainText -Credential $global:MyCred -DecryptionCredential $global:MyCred -ErrorAction Stop
+            
+            if (-not $info -or -not $info.Password) {
+                throw "LAPS object found, but your credentials do not have permission to read the password attribute on this machine's OU."
+            }
+            
+            $adComputer = Get-ADComputer -Identity $tag -Properties CanonicalName, DNSHostName -Server $global:CurrentDC -Credential $global:MyCred -ErrorAction Stop
+            if ($adComputer.DNSHostName) { $pingTarget = $adComputer.DNSHostName }
+
+            $lblAssetTitle.Text = $tag
+            $lblAdminUser.Text  = ".\$($info.Account)"
+            $lblAdminPass.Text  = "$($info.Password)"
+            $lblAssetOU.Text    = $adComputer.CanonicalName 
+
+            $lapsResultCard.Visibility = "Visible"
+
+            if (-not $listLapsHistory.Items.Contains($tag)) {
+                $listLapsHistory.Items.Insert(0, $tag)
+                if ($listLapsHistory.Items.Count -gt 5) { $listLapsHistory.Items.RemoveAt(5) }
+            }
+
+        } catch {
+            Write-Host "--- LAPS ERROR ---" -ForegroundColor Red
+            Write-Host "Target Asset Tag: $tag" -ForegroundColor Yellow
+            Write-Host "Error Message: $($_.Exception.Message)" -ForegroundColor White
+            Write-Host "Script Location: $($_.InvocationInfo.ScriptName) at line $($_.InvocationInfo.ScriptLineNumber)" -ForegroundColor Gray
+            Write-Host "-----------------------" -ForegroundColor Red
+
+            $lblLapsError.Visibility = "Visible"
+            $assetTagSearch.Focus()
+        }
+
+        # Ping runs whether or not the LAPS lookup worked, so you can still see if the PC is online
+        show_ping_window $pingTarget $tag
+    }
+}
+
+$listLapsHistory.Add_SelectionChanged({
+    if ($listLapsHistory.SelectedItem -ne $null) {
+        $assetTagSearch.Text = $listLapsHistory.SelectedItem
+        $assetTagSearch.Foreground = [System.Windows.Media.Brushes]::Black
+        search_asset_tag
+
+        $listLapsHistory.SelectedItem = $null
+    }
+})
+
+$assetTagSearch.Add_KeyDown({ if ($_.Key -eq "Enter") { $_.Handled = $true; search_asset_tag } })
+$assetTagSearch.Add_GotFocus({ if ($assetTagSearch.Text -eq "Search Asset Tag...") { $assetTagSearch.Text = ""; $assetTagSearch.Foreground = [System.Windows.Media.Brushes]::Black } })
+$assetTagSearch.Add_LostFocus({ if ([string]::IsNullOrWhiteSpace($assetTagSearch.Text)) { $assetTagSearch.Text = "Search Asset Tag..."; $assetTagSearch.Foreground = [System.Windows.Media.Brushes]::Gray } })
+$btnClearHistory.Add_Click({ $listLapsHistory.Items.Clear() })
+$btnsearchLaps.Add_Click({ search_asset_tag })
+
+
+### USER SEARCH LOGIC ###
+
+function search_user {
+    $user = $userSearch.Text.Trim()
+    
+    $lblUserError.Visibility        = "Collapsed"
+    $userContentArea.Visibility     = "Collapsed"
+    $multipleResultsArea.Visibility = "Collapsed"
+    $userSubNavbar.Visibility       = "Collapsed"
+    $userGroupsArea.Visibility      = "Collapsed"
+
+    $listUserResults.Items.Clear()
+    $global:currentLoadedUser = $null
+
+    if ($user -and $user -ne "Search User...") {
+        if ($user.length -gt 2) {
+            if (-not $global:CurrentDC) { $global:CurrentDC = (Get-ADDomainController).HostName }
+
+            $filter = "SamAccountName -eq '$user' -or DisplayName -like '*$user*' -or Name -like '*$user*'"
+            $searchResults = @(Get-ADUser -Filter $filter -Server $global:CurrentDC -Properties Title, EmailAddress, Manager -ErrorAction SilentlyContinue)
+
+            if ($searchResults.Count -eq 0) {
+                $lblUserError.Visibility = "Visible"
+                $lblUserError.Text = "? User not found!"
+
+            } elseif ($searchResults.Count -eq 1) {
+                load_user $searchResults[0].SamAccountName
+        
+            } else {
+                foreach ($u in $searchResults) {
+                    $bestName = if ($u.DisplayName) { $u.DisplayName } else { $u.Name }
+
+                    $row = [PSCustomObject]@{
+                        DisplayName    = $bestName
+                        SamAccountName = $u.SamAccountName
+                        EmailAddress   = if ($u.EmailAddress) { $u.EmailAddress } else { "N/A" }
+                        Manager        = if ($u.Manager) { ($u.Manager -split ",")[0].Replace("CN=","") } else { "N/A" }
+                        Color          = if ($u.Enabled) { "Black" } else { "Red" }
+                    }
+
+                    $listUserResults.Items.Add($row) | Out-Null
+                }
+
+                $multipleResultsArea.Visibility = "Visible"
+            }
+
+        } else {
+           $lblUserError.Visibility = "Visible"
+           $lblUserError.Text = "? Please type more than 2 characters!"
+        }
+    }
+}
+
+$global:lastClickedHeader = $null
+$global:sortDirection = "Ascending"
+
+function sort_users {
+    param($sender, $e)
+    
+    $column = $e.OriginalSource.Column
+    if ($null -eq $column) { return }
+
+    $headerClicked = $column.DisplayMemberBinding.Path.Path
+    if ($null -eq $headerClicked) { return }
+
+    if ($global:lastClickedHeader -eq $headerClicked) {
+        $global:sortDirection = if ($global:sortDirection -eq "Ascending") { "Descending" } else { "Ascending" }
+    } else {
+        $global:sortDirection = "Ascending"
+    }
+    $global:lastClickedHeader = $headerClicked
+
+    $items = @($listUserResults.Items)
+    $listUserResults.Items.Clear()
+
+    $sorted = if ($global:sortDirection -eq "Ascending") {
+        $items | Sort-Object -Property $headerClicked
+    } else {
+        $items | Sort-Object -Property $headerClicked -Descending
+    }
+
+    foreach ($item in $sorted) {
+        $listUserResults.Items.Add($item) | Out-Null
+    }
+}
+
+function load_user ($user) {
+    try {
+        $multipleResultsArea.Visibility = "Collapsed"
+        $lblUserError.Visibility = "Collapsed"
+        $userGroupsArea.Visibility = "Collapsed"
+        $userAppsArea.Visibility = "Collapsed"
+        $userContentArea.Visibility = "Visible"
+        $userSubNavbar.Visibility = "Visible"
+        
+        $btnSubUserInfo.Foreground = [System.Windows.Media.Brushes]::RoyalBlue
+        $btnSubUserInfo.BorderThickness = "0,0,0,2"
+
+        $btnSubUserGroups.Foreground = [System.Windows.Media.Brushes]::Gray
+        $btnSubUserGroups.BorderThickness = "0"
+        
+        $adUser = Get-ADUser -Identity $user -Server $global:CurrentDC -Properties DisplayName, Title, EmailAddress, Manager, 
+                        StreetAddress, City, State, PostalCode, Country, PasswordLastSet, lastLogonTimestamp, LastBadPasswordAttempt, badPwdCount,
+                        whenChanged, msExchRemoteRecipientType, extensionAttribute2, extensionAttribute3, AccountExpirationDate,
+                        employeeID, MobilePhone, OfficePhone, LockedOut -ErrorAction Stop
+        
+        $groups = Get-ADPrincipalGroupMembership -Identity $user | Sort-Object Name
+
+        $global:currentLoadedUser = $adUser.DistinguishedName
+
+        $officePhone = if ($adUser.OfficePhone) { $adUser.OfficePhone } else { "N/A" }
+        $mobilePhone = if ($adUser.MobilePhone) { $adUser.MobilePhone } else { "N/A" }
+            
+        $lblUserName.Text     = $adUser.DisplayName
+        $lblUserJobTitle.Text = $adUser.Title
+        $lblEmployeeID.Text   = if ($adUser.employeeID) { $adUser.employeeID } else { "N/A" }
+        $lblUserSam.Text      = $adUser.SamAccountName
+        $lblUserEmail.Text    = if ($adUser.EmailAddress) { $adUser.EmailAddress } else { "N/A" }
+        $lblUserManager.Text  = if ($adUser.Manager) {($adUser.Manager -split ",")[0].Replace("CN=","")} else { "N/A" }
+        $lblUserPhone.Text    = "$($officePhone) / $($mobilePhone)"
+        $lblUserAddress.Text  = $adUser.StreetAddress, $adUser.City, $adUser.State, $adUser.PostalCode, $adUser.Country
+
+        if ($groups -match "Disabled Users") {
+            $lblUserLevel.Text = "Disabled"
+            $lblUserLevel.Foreground = [System.Windows.Media.Brushes]::Red
+
+        } elseif ($groups -match "Low Risk") {
+            $lblUserLevel.Text = "Low Risk User"
+            $lblUserLevel.Foreground = [System.Windows.Media.Brushes]::Green
+
+        } elseif ($groups -match "Domain Users") {
+            $lblUserLevel.Text = "Domain User"
+            $lblUserLevel.Foreground = [System.Windows.Media.Brushes]::Blue
+
+        } else {
+            $lblUserLevel.Foreground = [System.Windows.Media.Brushes]::Gray
+            $lblUserLevel.Text = "NOT DETECTED"
+        }
+
+        $lblExtAttr2.Text = if ($adUser.extensionAttribute2) { $adUser.extensionAttribute2 } else { "N/A" }
+        $lblExtAttr3.Text = if ($adUser.extensionAttribute3) { $adUser.extensionAttribute3 } else { "N/A" }
+        $lblUserExch.Text = if ($adUser.msExchRemoteRecipientType) { $adUser.msExchRemoteRecipientType } else { "N/A" }
+
+        $lblPwdLastSet.Text       = if ($adUser.PasswordLastSet) { $adUser.PasswordLastSet.ToString("MMM dd, yyyy HH:mm") } else { "Never" }
+        $lblLastLogin.Text        = if ($adUser.LastLogonTimestamp) { [DateTime]::FromFileTime($adUser.LastLogonTimestamp).ToString("MMM dd, yyyy HH:mm") } else { "Never" }
+        $lblLastBadLogin.Text     = if ($adUser.LastBadPasswordAttempt) { $adUser.LastBadPasswordAttempt.ToString("MMM dd, yyyy HH:mm") } else { "Never" }
+        $lblModified.Text = if ($adUser.whenChanged) { $adUser.whenChanged.ToString("MMM dd, yyyy HH:mm") } else { "Never" }
+        $lblBadPasswordCount.Text = $adUser.BadPwdCount
+        
+        if (-not $adUser.Enabled) {
+            $lblUserStatus.Text = "DISABLED"
+            $brdUserStatus.Background = [System.Windows.Media.Brushes]::Red
+            $btnUnlockAccount.Visibility = "Collapsed"
+            $btnResetPassword.Visibility = "Collapsed"
+
+        } else {
+           if ($adUser.LockedOut)  {
+                $lblUserStatus.Text = "LOCKED"
+                $brdUserStatus.Background = [System.Windows.Media.Brushes]::Crimson
+                $btnUnlockAccount.Visibility = "Visible"
+                $btnResetPassword.Visibility = "Visible"
+
+            } else {
+                $lblUserStatus.Text = "UNLOCKED"
+                $brdUserStatus.Background = [System.Windows.Media.Brushes]::LimeGreen
+                $btnUnlockAccount.Visibility = "Visible"
+                $btnResetPassword.Visibility = "Visible"
+            } 
+        }
+
+        if ($adUser.AccountExpirationDate) {
+            $lastActiveDay = $adUser.AccountExpirationDate.AddDays(-1)
+    
+            $dpAccountExpiration.SelectedDate = $lastActiveDay
+            $lblExpirationText.Text = $lastActiveDay.ToString("MMMM dd, yyyy")
+        } else {
+            $dpAccountExpiration.SelectedDate = $null
+            $lblExpirationText.Text = "Never"
+        }
+        
+        $userContentArea.Visibility = "Visible"
+
+    } catch {
+        Write-Host "--- USER LOAD ERROR ---" -ForegroundColor Red
+        Write-Host "Target User: $Username" -ForegroundColor Yellow
+        Write-Host "Error Message: $($_.Exception.Message)" -ForegroundColor White
+        Write-Host "Script Location: $($_.InvocationInfo.ScriptName) at line $($_.InvocationInfo.ScriptLineNumber)" -ForegroundColor Gray
+        Write-Host "-----------------------" -ForegroundColor Red
+
+        $lblUserError.Visibility = "Visible"
+        $lblUserError.Text = "$($_.Exception.Message)"
+        $userContentArea.Visibility = "Collapsed"
+        $userGroupsArea.Visibility = "Collapsed"
+        $userSubNavbar.Visibility = "Collapsed"
+        $multipleResultsArea.Visibility = "Collapsed"
+
+        $global:currentLoadedUser = $null
+    }
+}
+
+function get_user_groups {
+    if (-not $global:currentLoadedUser) { return }
+
+    $listUserGroups.Items.Clear()
+    
+    try {
+        $memberOfDNs = (Get-ADUser -Identity $global:currentLoadedUser -Properties memberOf -Server $global:CurrentDC).memberOf
+        $groups = $memberOfDNs | ForEach-Object { 
+            if ($_ -match '^CN=(?<name>(?:[^\\,]|\\.)+),') { $Matches.name -replace '\\', '' } 
+        } | Sort-Object
+        
+        foreach ($g in $groups) {
+            $row = [PSCustomObject]@{
+                GroupName = $g
+            }
+            $listUserGroups.Items.Add($row) | Out-Null
+        }
+        
+        $lblGroupCount.Text = "Total Groups: $($listUserGroups.Items.Count)"
+    } catch {
+        Write-Host "Error loading groups: $($_.Exception.Message)" -ForegroundColor Red
+    }
+}
+
+function add_user_to_group {
+    if (-not $global:currentLoadedUser) {
+        [System.Windows.MessageBox]::Show("Please load a user first.")
+        return
+    }
+
+    $lblGroupActionError.Visibility = "Collapsed"
+
+    $groupName = $txtAddGroupName.Text.Trim()
+
+    if ([string]::IsNullOrWhiteSpace($groupName) -or $groupName -eq "Enter group name to add...") {
+        $lblGroupActionError.Text = "? Please enter a group name."
+        $lblGroupActionError.Visibility = "Visible"
+        return
+    }
+
+    try {
+        $adGroup = Get-ADGroup -Identity $groupName -Server $global:CurrentDC -ErrorAction Stop
+
+        $memberOfDNs = (Get-ADUser -Identity $global:currentLoadedUser -Properties memberOf -Server $global:CurrentDC).memberOf
+        $currentGroups = $memberOfDNs | ForEach-Object {
+            if ($_ -match '^CN=(?<name>(?:[^\\,]|\\.)+),') { $Matches.name -replace '\\', '' }
+        }
+
+        if ($currentGroups -contains $adGroup.Name) {
+            $lblGroupActionError.Text = "? User is already a member of '$($adGroup.Name)'."
+            $lblGroupActionError.Visibility = "Visible"
+            return
+        }
+
+        Add-ADGroupMember -Identity $adGroup -Members $global:currentLoadedUser -Credential $global:MyCred -Server $global:CurrentDC
+
+        $txtAddGroupName.Text = "Enter group name to add..."
+        $txtAddGroupName.Foreground = [System.Windows.Media.Brushes]::Gray
+
+        Start-Sleep -Milliseconds 200
+        get_user_groups
+        get_apps
+
+    } catch {
+        $lblGroupActionError.Text = "? Could not add to group: $($_.Exception.Message)"
+        $lblGroupActionError.Visibility = "Visible"
+    }
+}
+
+function remove_user_from_group {
+    if (-not $global:currentLoadedUser) {
+        [System.Windows.MessageBox]::Show("Please load a user first.")
+        return
+    }
+
+    $lblGroupActionError.Visibility = "Collapsed"
+
+    $selected = $listUserGroups.SelectedItem
+
+    if ($null -eq $selected) {
+        $lblGroupActionError.Text = "? Select a group from the list to remove."
+        $lblGroupActionError.Visibility = "Visible"
+        return
+    }
+
+    $groupName = $selected.GroupName
+
+    $confirm = [System.Windows.MessageBox]::Show("Remove $($lblUserName.Text) from '$groupName'?", "Confirm Removal", "YesNo", "Warning")
+
+    if ($confirm -ne "Yes") { return }
+
+    try {
+        Remove-ADGroupMember -Identity $groupName -Members $global:currentLoadedUser -Credential $global:MyCred -Confirm:$false -Server $global:CurrentDC
+
+        Start-Sleep -Milliseconds 200
+        get_user_groups
+        get_apps
+
+    } catch {
+        $lblGroupActionError.Text = "? Could not remove from group: $($_.Exception.Message)"
+        $lblGroupActionError.Visibility = "Visible"
+    }
+}
+
+$txtAddGroupName.Add_GotFocus({ if ($txtAddGroupName.Text -eq "Enter group name to add...") { $txtAddGroupName.Text = ""; $txtAddGroupName.Foreground = [System.Windows.Media.Brushes]::Black } })
+$txtAddGroupName.Add_LostFocus({ if ([string]::IsNullOrWhiteSpace($txtAddGroupName.Text)) { $txtAddGroupName.Text = "Enter group name to add..."; $txtAddGroupName.Foreground = [System.Windows.Media.Brushes]::Gray } })
+$txtAddGroupName.Add_KeyDown({ if ($_.Key -eq "Enter") { add_user_to_group } })
+
+$btnAddUserGroup.Add_Click({ add_user_to_group })
+$btnRemoveUserGroup.Add_Click({ remove_user_from_group })
+
+function get_apps {
+    if (-not $global:currentLoadedUser) { return }
+
+    try {
+        $memberOfDNs = (Get-ADUser -Identity $global:currentLoadedUser -Properties memberOf -Server $global:CurrentDC).memberOf
+        $userGroups = $memberOfDNs | ForEach-Object { 
+            if ($_ -match '^CN=(?<name>(?:[^\\,]|\\.)+),') { $Matches.name -replace '\\', '' } 
+        }
+    } catch { 
+        Write-Warning "Could not retrieve groups."
+        return 
+    }
+
+    $bc = New-Object System.Windows.Media.BrushConverter
+
+    $AddListItem = {
+        param($list, $groupName, $color)
+        $container = New-Object System.Windows.Controls.StackPanel -Property @{Orientation="Horizontal"; Margin="0,2"}
+        $icon = New-Object System.Windows.Controls.TextBlock -Property @{
+            Text = [char]0xE73E; FontFamily = "Segoe MDL2 Assets"; Foreground = $color; Margin = "0,0,8,0"; FontSize = 10
+        }
+        $text = New-Object System.Windows.Controls.TextBlock -Property @{Text = $groupName; FontSize = 11}
+        $container.Children.Add($icon); $container.Children.Add($text)
+        $list.Items.Add($container)
+    }
+
+    ### TRUX LOGIC###
+
+    $TruxUserGroup = "Trux User Group"
+    $TruxAWS = "CTX - AWS - APP - Trux"
+    
+    $hasTruxUserGroup = $userGroups -contains $TruxUserGroup
+    $hasTruxAWS = $userGroups -contains $TruxAWS
+
+    $listTruxStatus.Items.Clear()
+
+    if ($hasTruxAWS -and -not $hasTruxUserGroup) {
+        $brdTruxHeader.Background = $bc.ConvertFromString("#FFEB9C")
+        $truxColor = $bc.ConvertFromString("#9C5700")
+        $txtTruxStatusIcon.Text = [char]0xE7BA
+        $txtTruxVersion.Text = "Missing Trux User Group"
+
+    } elseif ($hasTruxUserGroup -and -not $hasTruxAWS) {
+        $brdTruxHeader.Background = $bc.ConvertFromString("#FFEB9C")
+        $truxColor = $bc.ConvertFromString("#9C5700")
+        $txtTruxStatusIcon.Text = [char]0xE7BA
+        $txtTruxVersion.Text = "Missing Citrix AWS Group"
+
+    } elseif ($hasTruxAWS -and $hasTruxUserGroup) {
+        $brdTruxHeader.Background = $bc.ConvertFromString("#C6EFCE")
+        $truxColor = $bc.ConvertFromString("#006100")
+        $txtTruxStatusIcon.Text = [char]0xE73E
+        $txtTruxVersion.Text = "AWS Access"
+
+    } else {
+        $brdTruxHeader.Background = $bc.ConvertFromString("#FFC7CE")
+        $truxColor = $bc.ConvertFromString("#9C0006")
+        $txtTruxStatusIcon.Text = [char]0xE711
+        $txtTruxVersion.Text = "No Access"
+    }
+    
+    $txtTruxTitle.Foreground = $truxColor
+    $txtTruxVersion.Foreground = $truxColor
+    $txtTruxStatusIcon.Foreground = $truxColor
+
+    if ($hasTruxAWS) { &$AddListItem $listTruxStatus $TruxAWS $truxColor }
+    if ($hasTruxUserGroup) { &$AddListItem $listTruxStatus $TruxUserGroup $truxColor }
+
+    $btnToggleTruxAWS.Content = if ($hasTruxAWS) { "Remove AWS" } else { "Add AWS" }
+    $btnToggleTruxMand.Content = if ($hasTruxUserGroup) { "Remove Trux Group" } else { "Add Trux Group" }
+
+    ### TOWER LOGIC ###
+
+    $TowerAWS = "CTX - AWS - APP - Tower"
+    
+    $hasTowerAWS = $userGroups -contains $TowerAWS
+
+    $listTowerStatus.Items.Clear()
+
+    if ($hasTowerAWS) {
+        $brdTowerHeader.Background = $bc.ConvertFromString("#C6EFCE")
+        $towerColor = $bc.ConvertFromString("#006100")
+        $txtTowerStatusIcon.Text = [char]0xE73E
+        $txtTowerVersion.Text = "AWS Access"
+    } else {
+        $brdTowerHeader.Background = $bc.ConvertFromString("#FFC7CE")
+        $towerColor = $bc.ConvertFromString("#9C0006")
+        $txtTowerStatusIcon.Text = [char]0xE711
+        $txtTowerVersion.Text = "No Access"
+    }
+
+    $txtTowerTitle.Foreground = $towerColor
+    $txtTowerVersion.Foreground = $towerColor
+    $txtTowerStatusIcon.Foreground = $towerColor
+
+    if ($hasTowerAWS) { &$AddListItem $listTowerStatus $TowerAWS $towerColor }
+
+    $btnToggleTowerAWS.Content = if ($hasTowerAWS) { "Remove AWS" } else { "Add AWS" }
+
+    ### M5 LOGIC ###
+
+    $M5US = "M5 US Users"
+    $M5CA = "M5 CA Users"
+    
+    $hasUS = $userGroups -contains $M5US
+    $hasCA = $userGroups -contains $M5CA
+
+    $listM5Status.Items.Clear()
+
+    if ($hasUS -and $hasCA) {
+        $brdM5Header.Background = $bc.ConvertFromString("#FFEB9C")
+        $m5Color = $bc.ConvertFromString("#9C5700")
+        $txtM5StatusIcon.Text = [char]0xE7BA
+        $txtM5Version.Text = "Dual Region Access"
+    }
+    elseif ($hasUS -or $hasCA) {
+        $brdM5Header.Background = $bc.ConvertFromString("#C6EFCE")
+        $m5Color = $bc.ConvertFromString("#006100")
+        $txtM5StatusIcon.Text = [char]0xE73E
+        
+        $region = if ($hasUS) { "US" } else { "CA" }
+        $txtM5Version.Text = "Region: $region"
+    }
+    else {
+        $brdM5Header.Background = $bc.ConvertFromString("#FFC7CE")
+        $m5Color = $bc.ConvertFromString("#9C0006")
+        $txtM5StatusIcon.Text = [char]0xE711
+        $txtM5Version.Text = "No Access"
+    }
+
+    $txtM5Title.Foreground = $m5Color
+    $txtM5Version.Foreground = $m5Color
+    $txtM5StatusIcon.Foreground = $m5Color
+
+    if ($hasUS) { &$AddListItem $listM5Status $M5US $m5Color }
+    if ($hasCA) { &$AddListItem $listM5Status $M5CA $m5Color }
+
+    $btnToggleM5US.Content = if ($hasUS) { "Remove US" } else { "Add US" }
+    $btnToggleM5CA.Content = if ($hasCA) { "Remove CA" } else { "Add CA" }
+
+    ### OMS LOGIC ###
+
+    $OMSV30 = "OMSV30"
+    $OMSV30DEV = "OMSV30DEV"
+    
+    $hasOMSV30 = $userGroups -contains $OMSV30
+    $hasOMSV30DEV = $userGroups -contains $OMSV30DEV
+
+    $listOMSStatus.Items.Clear()
+
+    if ($hasOMSV30 -and $hasOMSV30DEV) {
+        $brdOMSHeader.Background = $bc.ConvertFromString("#C6EFCE")
+        $omsColor = $bc.ConvertFromString("#006100")
+        $txtOMSStatusIcon.Text = [char]0xE73E
+        $txtOMSVersion.Text = "Has Access"
+    } elseif ($hasOMSV30 -and -not $hasOMSV30DEV) {
+        $brdOMSHeader.Background = $bc.ConvertFromString("#FFEB9C")
+        $omsColor = $bc.ConvertFromString("#9C5700")
+        $txtOMSStatusIcon.Text = [char]0xE7BA
+        $txtOMSVersion.Text = "Missing OMSV30DEV"
+    } elseif ($hasOMSV30DEV -and -not $hasOMSV30) {
+        $brdOMSHeader.Background = $bc.ConvertFromString("#FFEB9C")
+        $omsColor = $bc.ConvertFromString("#9C5700")
+        $txtOMSStatusIcon.Text = [char]0xE7BA
+        $txtOMSVersion.Text = "Missing OMSV30"
+    } else {
+        $brdOMSHeader.Background = $bc.ConvertFromString("#FFC7CE")
+        $omsColor = $bc.ConvertFromString("#9C0006")
+        $txtOMSStatusIcon.Text = [char]0xE711
+        $txtOMSVersion.Text = "No Access"
+    }
+
+    $txtOMSTitle.Foreground = $omsColor
+    $txtOMSVersion.Foreground = $omsColor
+    $txtOMSStatusIcon.Foreground = $omsColor
+
+    if ($hasOMSV30) { &$AddListItem $listOMSStatus $OMSV30 $omsColor }
+    if ($hasOMSV30DEV) { &$AddListItem $listOMSStatus $OMSV30DEV $omsColor }
+
+    $btnToggleOMSV30.Content = if ($hasOMSV30) { "Remove V30" } else { "Add V30" }
+    $btnToggleOMSV30DEV.Content = if ($hasOMSV30DEV) { "Remove V30DEV" } else { "Add V30DEV" }
+
+    ### CieTrade LOGIC ###
+
+    $CieAWS = "CTX - AWS - APP - Cietrade"
+    $CieScale1 = "CTX - AWS - APP - Cietrade Scale 1"
+    $CieScale2 = "CTX - AWS - APP - Cietrade Scale 2"
+    
+    $hasCieAWS = $userGroups -contains $CieAWS
+    $hasCieScale1 = $userGroups -contains $CieScale1
+    $hasCieScale2 = $userGroups -contains $CieScale2
+
+    $listCieStatus.Items.Clear()
+
+    if ($hasCieAWS) {
+        $brdCieHeader.Background = $bc.ConvertFromString("#C6EFCE")
+        $cieColor = $bc.ConvertFromString("#006100")
+        $txtCieStatusIcon.Text = [char]0xE73E
+        $txtCieVersion.Text = "AWS Access"
+    } else {
+        $brdCieHeader.Background = $bc.ConvertFromString("#FFC7CE")
+        $cieColor = $bc.ConvertFromString("#9C0006")
+        $txtCieStatusIcon.Text = [char]0xE711
+        $txtCieVersion.Text = "No Access"
+    }
+
+    $txtCieTitle.Foreground = $cieColor
+    $txtCieVersion.Foreground = $cieColor
+    $txtCieStatusIcon.Foreground = $cieColor
+
+    if ($hasCieAWS) { &$AddListItem $listCieStatus $CieAWS $cieColor }
+    if ($hasCieScale1) { &$AddListItem $listCieStatus $CieScale1 $cieColor }
+    if ($hasCieScale2) { &$AddListItem $listCieStatus $CieScale2 $cieColor }
+
+    $btnToggleCieScale1.Content = if ($hasCieScale1) { "Remove Scale 1" } else { "Add Scale 1" }
+    $btnToggleCieScale2.Content = if ($hasCieScale2) { "Remove Scale 2" } else { "Add Scale 2" }
+    $btnToggleCieAWS.Content = if ($hasCieAWS) { "Remove AWS" } else { "Add AWS" }
+
+    ### PCSCALE LOGIC ###
+
+    $PCScaleAWS = "CTX - AWS - APP - PC Scale"
+    
+    $hasPCScaleAWS = $userGroups -contains $PCScaleAWS
+
+    $listPCScaleStatus.Items.Clear()
+
+    if ($hasPCScaleAWS) {
+        $brdPCScaleHeader.Background = $bc.ConvertFromString("#C6EFCE")
+        $PCScaleColor = $bc.ConvertFromString("#006100")
+        $txtPCScaleStatusIcon.Text = [char]0xE73E 
+        $txtPCScaleVersion.Text = "AWS Access"
+    }
+    else {
+        $brdPCScaleHeader.Background = $bc.ConvertFromString("#FFC7CE")
+        $PCScaleColor = $bc.ConvertFromString("#9C0006")
+        $txtPCScaleStatusIcon.Text = [char]0xE711
+        $txtPCScaleVersion.Text = "No Access"
+    }
+
+    $txtPCScaleTitle.Foreground = $PCScaleColor
+    $txtPCScaleVersion.Foreground = $PCScaleColor
+    $txtPCScaleStatusIcon.Foreground = $PCScaleColor
+
+    if ($hasPCScaleAWS) { &$AddListItem $listPCScaleStatus $PCScaleAWS $PCScaleColor }
+
+    $btnTogglePCScaleAWS.Content = if ($hasPCScaleAWS) { "Remove AWS" } else { "Add AWS" }
+
+    ### COGNOS LOGIC ###
+
+    $CognosCTX = "CTX - IBM Cognos TM1 Client"
+    $CognosZscaler= "Zscaler-ZPA-Cognos"
+    
+    $hasCognosCTX = $userGroups -contains $CognosCTX
+    $hasCognosZscaler = $userGroups -contains $CognosZscaler
+
+    $listCognosStatus.Items.Clear()
+    
+    if ($hasCognosCTX -and $hasCognosZscaler) {
+        $brdCognosHeader.Background = $bc.ConvertFromString("#C6EFCE")
+        $cognosColor = $bc.ConvertFromString("#006100")
+        $txtCognosStatusIcon.Text = [char]0xE73E
+        $txtCognosVersion.Text = "Has Access"
+    } elseif ($hasCognosCTX -and -not $hasCognosZscaler) {
+        $brdCognosHeader.Background = $bc.ConvertFromString("#FFEB9C")
+        $cognosColor = $bc.ConvertFromString("#9C5700")
+        $txtCognosStatusIcon.Text = [char]0xE7BA
+        $txtCognosVersion.Text = "Missing Zscaler-ZPA-Cognos"
+    } elseif ($hasCognosZscaler -and -not $hasCognosCTX) {
+        $brdCognosHeader.Background = $bc.ConvertFromString("#FFEB9C")
+        $cognosColor = $bc.ConvertFromString("#9C5700")
+        $txtCognosStatusIcon.Text = [char]0xE7BA
+        $txtCognosVersion.Text = "Missing CTX - IBM Cognos TM1 Client"
+    } else {
+        $brdCognosHeader.Background = $bc.ConvertFromString("#FFC7CE")
+        $cognosColor = $bc.ConvertFromString("#9C0006")
+        $txtCognosStatusIcon.Text = [char]0xE711
+        $txtCognosVersion.Text = "No Access"
+    }
+
+    $txtCognosTitle.Foreground = $cognosColor
+    $txtCognosVersion.Foreground = $cognosColor
+    $txtCognosStatusIcon.Foreground = $cognosColor
+
+    if ($hasCognosCTX) { &$AddListItem $listCognosStatus $CognosCTX $cognosColor }
+    if ($hasCognosZscaler) { &$AddListItem $listCognosStatus $CognosZscaler $cognosColor }
+
+    $btnToggleCognosCTX.Content = if ($hasCognosCTX) { "Remove CTX" } else { "Add CTX" }
+    $btnToggleCognosZscaler.Content = if ($hasCognosZscaler) { "Remove ZPA" } else { "Add ZPA" }
+}
+
+function toggle_groups {
+    param(
+        [string]$GroupName,
+        [System.Windows.Controls.Button]$Button
+    )
+
+    if (-not $global:currentLoadedUser) { 
+        [System.Windows.MessageBox]::Show("Please load a user first.")
+        return 
+    }
+
+    $memberOfDNs = (Get-ADUser -Identity $global:currentLoadedUser -Properties memberOf -Server $global:CurrentDC).memberOf
+    $userGroups = $memberOfDNs | ForEach-Object { 
+        if ($_ -match '^CN=(?<name>(?:[^\\,]|\\.)+),') { $Matches.name -replace '\\', '' } 
+    }
+    
+    try {
+        if ($userGroups -contains $GroupName) {
+            Remove-ADGroupMember -Identity $GroupName -Members $global:currentLoadedUser -Credential $global:MyCred -Confirm:$false -Server $global:CurrentDC
+        } else {
+            Add-ADGroupMember -Identity $GroupName -Members $global:currentLoadedUser -Credential $global:MyCred -Server $global:CurrentDC
+        }
+        
+        Start-Sleep -Milliseconds 200
+        get_apps
+    } catch {
+        [System.Windows.MessageBox]::Show("Error updating group: $($_.Exception.Message)")
+    }
+}
+
+# Trux Click Events
+$btnToggleTruxAWS.Add_Click({ toggle_groups "CTX - AWS - APP - Trux" $btnToggleTruxAWS })
+$btnToggleTruxMand.Add_Click({ toggle_groups "Trux User Group" $btnToggleTruxMand })
+
+# Tower Click Events
+$btnToggleTowerAWS.Add_Click({ toggle_groups "CTX - AWS - APP - Tower" $btnToggleTowerAWS })
+
+# M5 Click Events
+$btnToggleM5US.Add_Click({ toggle_groups "M5 US Users" $btnToggleM5US })
+$btnToggleM5CA.Add_Click({ toggle_groups "M5 CA Users" $btnToggleM5CA })
+
+# OMS Click Events
+$btnToggleOMSV30.Add_Click({ toggle_groups "OMSV30" $btnToggleOMSV30 })
+$btnToggleOMSV30DEV.Add_Click({ toggle_groups "OMSV30DEV" $btnToggleOMSV30DEV })
+
+# CieTrade Click Events
+$btnToggleCieAWS.Add_Click({ toggle_groups "CTX - AWS - APP - Cietrade" $btnToggleCieAWS })
+$btnToggleCieScale1.Add_Click({ toggle_groups "CTX - AWS - APP - Cietrade Scale 1" $btnToggleCieScale1 })
+$btnToggleCieScale2.Add_Click({ toggle_groups "CTX - AWS - APP - Cietrade Scale 2" $btnToggleCieScale2 })
+
+# PCScale Click Events
+$btnTogglePCScaleAWS.Add_Click({ toggle_groups "CTX - AWS - APP - PC Scale" $btnPCScaleAWS })
+
+# Cognos Click Events
+$btnToggleCognosCTX.Add_Click({ toggle_groups "CTX - IBM Cognos TM1 Client" $btnCognosCTX })
+$btnToggleCognosZscaler.Add_Click({ toggle_groups "Zscaler-ZPA-Cognos" $btnCognosZscaler })
+
+
+$listUserResults.AddHandler([System.Windows.Controls.GridViewColumnHeader]::ClickEvent, [System.Windows.RoutedEventHandler]{ sort_users $args[0] $args[1] })
+
+$btnResetPassword.Add_Click({
+    if (-not $global:currentLoadedUser) { return }
+
+    $newPassword = [Microsoft.VisualBasic.Interaction]::InputBox("Enter the new password for $($lblUserSam.Text):", "Reset AD Password", "")
+
+    if (-not [string]::IsNullOrWhiteSpace($newPassword)) {
+        
+        $confirm = [System.Windows.MessageBox]::Show("Are you sure you want to reset the password for $($lblUserName.Text)?", "Confirm Reset", "YesNo", "Warning")
+        
+        if ($confirm -eq "Yes") {
+            try {
+                $securePass = ConvertTo-SecureString $newPassword -AsPlainText -Force
+                
+                Set-ADAccountPassword -Identity $global:currentLoadedUser -NewPassword $securePass -Reset -Credential $global:MyCred -Server $global:CurrentDC
+                Set-ADUser -Identity $global:currentLoadedUser -ChangePasswordAtLogon $false -Credential $global:MyCred -Server $global:CurrentDC
+                Unlock-ADAccount -Identity $global:currentLoadedUser -Credential $global:MyCred -Server $global:CurrentDC
+                
+                [System.Windows.MessageBox]::Show("Password reset and account unlocked.", "Success", "OK", "Information")
+                
+                load_user $lblUserSam.Text
+            }
+            catch {
+                [System.Windows.MessageBox]::Show("Failed to reset password: $($_.Exception.Message)", "Error", "OK", "Error")
+            }
+        }
+    }
+})
+
+$btnUnlockAccount.Add_Click({
+    try {
+        Unlock-ADAccount -Identity $global:currentLoadedUser -Credential $global:MyCred -Server $global:CurrentDC
+        [System.Windows.MessageBox]::Show("Account unlocked successfully.", "Success", "OK", "Information")
+        load_user $global:currentLoadedUser
+    } catch {
+        [System.Windows.MessageBox]::Show("Failed to unlock: $($_.Exception.Message)", "Error", "OK", "Error")
+    }
+})
+
+$btnUpdateAttributes.Add_Click({
+    if (-not $global:currentLoadedUser) { return }
+
+    $val2 = $lblExtAttr2.Text.Trim()
+    $val3 = $lblExtAttr3.Text.Trim()
+
+    if (($val2 -ne "" -and $val2 -notmatch "^\d+$") -or ($val3 -ne "" -and $val3 -notmatch "^\d+$")) {
+        [System.Windows.MessageBox]::Show("Invalid Input: Please enter numbers only or leave the field blank.", "Validation Error", "OK", "Error")
+        return
+    }
+
+    $status2 = if ([string]::IsNullOrWhiteSpace($val2)) { "[WILL BE CLEARED]" } else { $val2 }
+    $status3 = if ([string]::IsNullOrWhiteSpace($val3)) { "[WILL BE CLEARED]" } else { $val3 }
+
+    $msg = "Confirming changes for user: $global:currentLoadedUser`n`n" +
+           "Extension Attribute 2: $status2`n" +
+           "Extension Attribute 3: $status3"
+
+    $confirm = [System.Windows.MessageBox]::Show($msg, "Confirm AD Update", "YesNo", "Warning")
+
+    if ($confirm -eq "Yes") {
+        try {
+            $adParams = @{
+                Identity = $global:currentLoadedUser
+                ErrorAction = "Stop"
+            }
+            $replaceHash = @{}
+            $clearList = @()
+
+            if ([string]::IsNullOrWhiteSpace($val2)) {
+                $clearList += "extensionAttribute2"
+            } else {
+                $replaceHash.Add("extensionAttribute2", $val2)
+            }
+
+            if ([string]::IsNullOrWhiteSpace($val3)) {
+                $clearList += "extensionAttribute3"
+            } else {
+                $replaceHash.Add("extensionAttribute3", $val3)
+            }
+
+            if ($replaceHash.Count -gt 0) { $adParams.Add("Replace", $replaceHash) }
+            if ($clearList.Count -gt 0) { $adParams.Add("Clear", $clearList) }
+
+            Set-ADUser @adParams -Credential $global:MyCred
+            [System.Windows.MessageBox]::Show("Successfully updated Active Directory.", "Success", "OK", "Information")
+            load_user $global:currentLoadedUser
+        }
+        catch {
+            [System.Windows.MessageBox]::Show("Failed to update: $($_.Exception.Message)", "Error", "OK", "Error")
+        }
+    }
+})
+
+$dpAccountExpiration.Add_SelectedDateChanged({
+    if ($dpAccountExpiration.SelectedDate) {
+        $lblExpirationText.Text = $dpAccountExpiration.SelectedDate.ToString("MMMM, dd, yyyy")
+    }
+})
+
+$btnClearExpiration.Add_Click({
+    $dpAccountExpiration.SelectedDate = $null
+    $lblExpirationText.Text = "Never"
+})
+
+$btnSaveExpiration.Add_Click({
+    if ($global:currentLoadedUser) {
+        try {
+            $rawDate = $dpAccountExpiration.SelectedDate
+
+            if ($null -eq $rawDate) {
+                Clear-ADAccountExpiration -Identity $global:currentLoadedUser -Credential $global:MyCred -Server $global:CurrentDC
+                $lblExpirationText.Text = "Never"
+                [System.Windows.MessageBox]::Show("Account set to Never Expire.", "Success")
+
+            } else {
+                $adExpirationDate = ([datetime]$rawDate).Date.AddDays(1)
+
+                Set-ADUser -Identity $global:currentLoadedUser -AccountExpirationDate $adExpirationDate -Credential $global:MyCred -Server $global:CurrentDC
+
+                $lblExpirationText.Text = ([datetime]$rawDate).ToString("MMMM dd, yyyy")
+
+                [System.Windows.MessageBox]::Show("Expiration date changed to $($lblExpirationText.Text)", "Success")
+            }
+        } catch {
+            [System.Windows.MessageBox]::Show("Error saving to AD: $($_.Exception.Message)", "Error")
+        }
+    } else {
+        [System.Windows.MessageBox]::Show("Please load a user first.", "Warning")
+    }
+})
+
+$numericFilter = {
+    if (([int]$_.Key -ge 34 -and [int]$_.Key -le 43) -or 
+        ([int]$_.Key -ge 74 -and [int]$_.Key -le 83) -or 
+        $_.Key -eq "Back" -or $_.Key -eq "Delete" -or $_.Key -eq "Tab") {
+    } else {
+        $_.Handled = $true
+    }
+}
+
+$lblExtAttr2.Add_KeyDown($numericFilter)
+$lblExtAttr3.Add_KeyDown($numericFilter)
+
+$btnSubUserInfo.Add_Click({
+    $userContentArea.Visibility = "Visible"
+    $userGroupsArea.Visibility  = "Collapsed"
+    $userAppsArea.Visibility = "Collapsed"
+
+    $btnSubUserInfo.Foreground = [System.Windows.Media.Brushes]::RoyalBlue
+    $btnSubUserInfo.FontWeight = "SemiBold"
+    $btnSubUserInfo.BorderThickness = New-Object System.Windows.Thickness(0,0,0,2)
+    $btnSubUserInfo.BorderBrush = [System.Windows.Media.Brushes]::RoyalBlue
+    
+
+    $btnSubUserGroups.Foreground = [System.Windows.Media.Brushes]::Gray
+    $btnSubUserGroups.FontWeight = "Normal"
+    $btnSubUserGroups.BorderThickness = New-Object System.Windows.Thickness(0)
+
+    $btnSubUserApps.Foreground = [System.Windows.Media.Brushes]::Gray
+    $btnSubUserApps.FontWeight = "Normal"
+    $btnSubUserApps.BorderThickness = New-Object System.Windows.Thickness(0)
+})
+
+$btnSubUserGroups.Add_Click({
+    $userContentArea.Visibility = "Collapsed"
+    $userGroupsArea.Visibility = "Visible"
+    $userAppsArea.Visibility = "Collapsed"
+
+    $btnSubUserInfo.Foreground = [System.Windows.Media.Brushes]::Gray
+    $btnSubUserInfo.FontWeight = "Normal"
+    $btnSubUserInfo.BorderThickness = New-Object System.Windows.Thickness(0)
+
+    $btnSubUserGroups.Foreground = [System.Windows.Media.Brushes]::RoyalBlue
+    $btnSubUserGroups.FontWeight = "SemiBold"
+    $btnSubUserGroups.BorderThickness = New-Object System.Windows.Thickness(0,0,0,2)
+    $btnSubUserGroups.BorderBrush = [System.Windows.Media.Brushes]::RoyalBlue
+
+    $btnSubUserApps.Foreground = [System.Windows.Media.Brushes]::Gray
+    $btnSubUserApps.FontWeight = "Normal"
+    $btnSubUserApps.BorderThickness = New-Object System.Windows.Thickness(0)
+
+    get_user_groups
+})
+
+$btnSubUserApps.Add_Click({
+    $userContentArea.Visibility = "Collapsed"
+    $userGroupsArea.Visibility = "Collapsed"
+    $userAppsArea.Visibility = "Visible"
+
+    $btnSubUserInfo.Foreground = [System.Windows.Media.Brushes]::Gray
+    $btnSubUserInfo.FontWeight = "Normal"
+    $btnSubUserInfo.BorderThickness = New-Object System.Windows.Thickness(0)
+
+    $btnSubUserGroups.Foreground = [System.Windows.Media.Brushes]::Gray
+    $btnSubUserGroups.FontWeight = "Normal"
+    $btnSubUserGroups.BorderThickness = New-Object System.Windows.Thickness(0)
+
+    $btnSubUserApps.Foreground = [System.Windows.Media.Brushes]::RoyalBlue
+    $btnSubUserApps.FontWeight = "SemiBold"
+    $btnSubUserApps.BorderThickness = New-Object System.Windows.Thickness(0,0,0,2)
+    $btnSubUserApps.BorderBrush = [System.Windows.Media.Brushes]::RoyalBlue
+
+    get_apps
+})
+
+$listUserResults.Add_MouseDoubleClick({
+    if ($listUserResults.SelectedItem -ne $null) {
+        $selectedUsername = $listUserResults.SelectedItem.SamAccountName
+        
+        load_user $selectedUsername
+    }
+})
+
+$userSearch.Add_KeyDown({ if ($_.Key -eq "Enter") { $_.Handled = $true; search_user } })
+$userSearch.Add_GotFocus({ if ($userSearch.Text -eq "Search User...") { $userSearch.Text = ""; $userSearch.Foreground = [System.Windows.Media.Brushes]::Black } })
+$userSearch.Add_LostFocus({ if ([string]::IsNullOrWhiteSpace($userSearch.Text)) { $userSearch.Text = "Search User..."; $userSearch.Foreground = [System.Windows.Media.Brushes]::Gray } })
+$btnsearchUser.Add_Click({ search_user })
+
+
+### EMPLOYEE ID LOGIC ###
+
+function search_employee_id {
+    $employeeID = $employeeIDSearch.Text.Trim()
+
+    $lblEmployeeIDError.Visibility = "Collapsed"
+    $employeeIDResultCard.Visibility = "Collapsed"
+    $employeeMultipleArea.Visibility = "Collapsed"
+
+    $listEmployeeResults.Items.Clear()
+
+    if ($employeeID -and $employeeID -ne "Search Employee ID...") {
+        if ($employeeID.length -gt 2) {
+            try {
+                $filter = "EmployeeID -eq '$employeeID'"
+                $employees = @(Get-ADUser -Filter $filter -Properties DisplayName, EmployeeID -ErrorAction Stop)
+
+                if ($employees.Count -eq 0) {
+                    $lblEmployeeIDError.Visibility = "Visible"
+                    $lblEmployeeIDError.Text = "? No users found."
+
+                } elseif ($employees.Count -eq 1) {
+                    $employeeIDResultCard.Visibility = "Visible"
+                    $lblEmployeeName.Text = $employees[0].DisplayName
+                    $lblEmployeeSam.Text  = $employees[0].SamAccountName
+                    $lblEmployeeNumber.Text  = $employees[0].EmployeeID
+                
+                    $global:tempEmployee = $employees[0].SamAccountName
+        
+                } else {
+                    $employeeMultipleArea.Visibility = "Visible"
+
+                    foreach ($u in $employees) {
+                        $listEmployeeResults.Items.Add([PSCustomObject]@{
+                            DisplayName = $u.DisplayName
+                            SamAccountName = $u.SamAccountName
+                            EmployeeNumber = $u.EmployeeID
+                        })
+                    }
+                }
+
+            } catch {
+                Write-Host "--- EMPLOYEE ID ERROR ---" -ForegroundColor Red
+                Write-Host "Target Employee ID: $employeeID" -ForegroundColor Yellow
+                Write-Host "Error Message: $($_.Exception.Message)" -ForegroundColor White
+                Write-Host "Script Location: $($_.InvocationInfo.ScriptName) at line $($_.InvocationInfo.ScriptLineNumber)" -ForegroundColor Gray
+                Write-Host "-----------------------" -ForegroundColor Red
+            }
+
+        } else {
+           $lblEmployeeIDError.Visibility = "Visible"
+           $lblEmployeeIDError.Text = "? Please type at least 3 characters!"
+        }
+    }
+}
+
+$employeeIDSearch.Add_KeyDown({ if ($_.Key -eq "Enter") { search_employee_id } })
+$employeeIDSearch.Add_GotFocus({ if ($employeeIDSearch.Text -eq "Search Employee ID...") { $employeeIDSearch.Text = ""; $employeeIDSearch.Foreground = "Black" } })
+$btnSearchEmployeeID.Add_Click({ search_employee_id })
+
+$btnGoToEmployeeProfile.Add_Click({
+    if ($global:tempEmployee) {
+        show_screen "screenUserInfo" $btnUserInfo 
+        
+        $userSearch.Text = $global:tempEmployee
+        $userSearch.Foreground = "Black"
+        load_user $global:tempEmployee
+    }
+})
+
+$listEmployeeResults.Add_MouseDoubleClick({
+    if ($listEmployeeResults.SelectedItem -ne $null) {
+        $selectedUsername = $listEmployeeResults.SelectedItem.SamAccountName
+        
+        load_user $selectedUsername
+        show_screen "screenUserInfo" $btnUserInfo 
+    }
+})
+
+### PRINTER CARD LOGIC ###
+
+function search_printer_card {
+    $cardNumber = $printerCardSearch.Text.Trim()
+
+    $lblPrinterCardError.Visibility = "Collapsed"
+    $printerResultCard.Visibility = "Collapsed"
+    $printerMultipleArea.Visibility = "Collapsed"
+
+    $listPrinterResults.Items.Clear()
+
+    if ($cardNumber -and $cardNumber -ne "Search Printer Card...") {
+        if ($cardNumber.length -gt 2) {
+            try {
+                $filter = "extensionAttribute2 -eq '$cardNumber'"
+                $owners = @(Get-ADUser -Filter $filter -Properties DisplayName, extensionAttribute2, extensionAttribute3 -ErrorAction Stop)
+
+                if ($owners.Count -eq 0) {
+                    $lblPrinterCardError.Visibility = "Visible"
+                    $lblPrinterCardError.Text = "? No users assigned to this card."
+
+                } elseif ($owners.Count -eq 1) {
+                    $printerResultCard.Visibility = "Visible"
+                    $lblPrinterOwnerName.Text = $owners[0].DisplayName
+                    $lblPrinterOwnerSam.Text  = $owners[0].SamAccountName
+                    $lblPrinterOwnerAttr2.Text  = $owners[0].extensionAttribute2
+                    $lblPrinterOwnerAttr3.Text  = $owners[0].extensionAttribute3
+                
+                    $global:tempPrinterUser = $owners[0].SamAccountName
+        
+                } else {
+                    $printerMultipleArea.Visibility = "Visible"
+
+                    foreach ($u in $owners) {
+                        $listPrinterResults.Items.Add([PSCustomObject]@{
+                            DisplayName = $u.DisplayName
+                            SamAccountName = $u.SamAccountName
+                            extensionAttribute2 =$u.extensionAttribute2
+                            extensionAttribute3 = $u.extensionAttribute3
+                        })
+                    }
+                }
+
+            } catch {
+                Write-Host "--- PRINTER CARD ERROR ---" -ForegroundColor Red
+                Write-Host "Target Printer Card Number: $cardNumber" -ForegroundColor Yellow
+                Write-Host "Error Message: $($_.Exception.Message)" -ForegroundColor White
+                Write-Host "Script Location: $($_.InvocationInfo.ScriptName) at line $($_.InvocationInfo.ScriptLineNumber)" -ForegroundColor Gray
+                Write-Host "-----------------------" -ForegroundColor Red
+            }
+
+        } else {
+           $lblPrinterCardError.Visibility = "Visible"
+           $lblPrinterCardError.Text = "? Please type at least 3 characters!"
+        }
+    }
+}
+
+$printerCardSearch.Add_KeyDown({ if ($_.Key -eq "Enter") { search_printer_card } })
+$printerCardSearch.Add_GotFocus({ if ($printerCardSearch.Text -eq "Search Printer Card...") { $printerCardSearch.Text = ""; $printerCardSearch.Foreground = "Black" } })
+$btnSearchPrinterCard.Add_Click({ search_printer_card })
+
+$btnGoToUserProfile.Add_Click({
+    if ($global:tempPrinterUser) {
+        show_screen "screenUserInfo" $btnUserInfo 
+        
+        $userSearch.Text = $global:tempPrinterUser
+        $userSearch.Foreground = "Black"
+        load_user $global:tempPrinterUser
+    }
+})
+
+$listPrinterResults.Add_MouseDoubleClick({
+    if ($listPrinterResults.SelectedItem -ne $null) {
+        $selectedUsername = $listPrinterResults.SelectedItem.SamAccountName
+        
+        load_user $selectedUsername
+        show_screen "screenUserInfo" $btnUserInfo 
+    }
+})
+
+
+### TIER 2 LOOKUP LOGIC ###
+
+# Data-driven: add a state/province by adding one line. Group = T2 escalation team, TzId = Windows timezone id.
+$global:T2Data = @{
+    "Canada" = @{
+        "British Columbia" = @{ Group = "Tier 2 Service Support - CA Western & Central"; TzId = "Pacific Standard Time"; Abbr = "PST/PDT" }
+        "Manitoba"         = @{ Group = "Tier 2 Service Support - CA Western & Central"; TzId = "Central Standard Time"; Abbr = "CST/CDT" }
+        "Ontario"          = @{ Group = "Tier 2 Service Support - CA Corporate";         TzId = "Eastern Standard Time"; Abbr = "EST/EDT" }
+        "Quebec"           = @{ Group = "Tier 2 Service Support - CA Quebec";            TzId = "Eastern Standard Time"; Abbr = "EST/EDT" }
+    }
+    "USA" = @{
+        "Arkansas"       = @{ Group = "Tier 2 Service Support - US South";   TzId = "Central Standard Time"; Abbr = "CST/CDT" }
+        "Florida"        = @{ Group = "Tier 2 Service Support - US South";   TzId = "Eastern Standard Time"; Abbr = "EST/EDT" }
+        "Georgia"        = @{ Group = "Tier 2 Service Support - US Central"; TzId = "Eastern Standard Time"; Abbr = "EST/EDT" }
+        "Illinois"       = @{ Group = "Tier 2 Service Support - US North";   TzId = "Central Standard Time"; Abbr = "CST/CDT" }
+        "Indiana"        = @{ Group = "Tier 2 Service Support - US North";   TzId = "Eastern Standard Time"; Abbr = "EST/EDT" }
+        "Kansas"         = @{ Group = "Tier 2 Service Support - US South";   TzId = "Central Standard Time"; Abbr = "CST/CDT" }
+        "Kentucky"       = @{ Group = "Tier 2 Service Support - US Central"; TzId = "Eastern Standard Time"; Abbr = "EST/EDT" }
+        "Minnesota"      = @{ Group = "Tier 2 Service Support - US North";   TzId = "Central Standard Time"; Abbr = "CST/CDT" }
+        "Michigan"       = @{ Group = "Tier 2 Service Support - US North";   TzId = "Eastern Standard Time"; Abbr = "EST/EDT" }
+        "Missouri"       = @{ Group = "Tier 2 Service Support - US South";   TzId = "Central Standard Time"; Abbr = "CST/CDT" }
+        "New York"       = @{ Group = "Tier 2 Service Support - US North";   TzId = "Eastern Standard Time"; Abbr = "EST/EDT" }
+        "North Carolina" = @{ Group = "Tier 2 Service Support - US Central"; TzId = "Eastern Standard Time"; Abbr = "EST/EDT" }
+        "Ohio"           = @{ Group = "Tier 2 Service Support - US North";   TzId = "Eastern Standard Time"; Abbr = "EST/EDT" }
+        "Oklahoma"       = @{ Group = "Tier 2 Service Support - US South";   TzId = "Central Standard Time"; Abbr = "CST/CDT" }
+        "Pennsylvania"   = @{ Group = "Tier 2 Service Support - US North";   TzId = "Eastern Standard Time"; Abbr = "EST/EDT" }
+        "South Carolina" = @{ Group = "Tier 2 Service Support - US Central"; TzId = "Eastern Standard Time"; Abbr = "EST/EDT" }
+        "Tennessee"      = @{ Group = "Tier 2 Service Support - US Central"; TzId = "Central Standard Time"; Abbr = "CST/CDT" }
+        "Texas"          = @{ Group = "Tier 2 Service Support - US South";   TzId = "Central Standard Time"; Abbr = "CST/CDT" }
+        "Virginia"       = @{ Group = "Tier 2 Service Support - US Central"; TzId = "Eastern Standard Time"; Abbr = "EST/EDT" }
+        "Wisconsin"      = @{ Group = "Tier 2 Service Support - US North";   TzId = "Central Standard Time"; Abbr = "CST/CDT" }
+    }
+}
+
+$global:T2Updating = $false
+$global:T2TzCache  = @{}
+
+function get_t2_timezone ($tzId) {
+    if (-not $global:T2TzCache.ContainsKey($tzId)) {
+        $global:T2TzCache[$tzId] = [System.TimeZoneInfo]::FindSystemTimeZoneById($tzId)
+    }
+    return $global:T2TzCache[$tzId]
+}
+
+function get_t2_reference {
+    if ($cbT2Origin.SelectedItem -eq "Azores") {
+        return @{ TimeZone = (get_t2_timezone "Azores Standard Time"); Name = "Azores" }
+    }
+    try {
+        $tz = get_t2_timezone "GMT Standard Time"
+    } catch {
+        $tz = get_t2_timezone "Europe/Lisbon"
+    }
+    return @{ TimeZone = $tz; Name = "Portugal Mainland" }
+}
+
+function get_t2_selection {
+    $country = $cbT2Country.SelectedItem
+    $state   = $cbT2State.SelectedItem
+    if ($country -and $state) { return $global:T2Data[$country][$state] }
+    return $null
+}
+
+function set_t2_clocks ($stateText, $originText) {
+    $global:T2Updating = $true
+    try {
+        $txtT2StateTime.Text  = $stateText
+        $txtT2OriginTime.Text = $originText
+    } finally {
+        $global:T2Updating = $false
+    }
+}
+
+function update_t2_panel {
+    $info = get_t2_selection
+    if (-not $info) { return }
+
+    $ref        = get_t2_reference
+    $tzDest     = get_t2_timezone $info.TzId
+    $nowUtc     = [System.DateTimeOffset]::UtcNow
+    $timeDest   = [System.TimeZoneInfo]::ConvertTime($nowUtc, $tzDest)
+    $timeOrigin = [System.TimeZoneInfo]::ConvertTime($nowUtc, $ref.TimeZone)
+
+    $diffHours = [Math]::Round(($timeDest.Offset - $timeOrigin.Offset).TotalHours, 1)
+    $sign = if ($diffHours -ge 0) { "+$diffHours" } else { "$diffHours" }
+
+    $txtT2Group.Text = $info.Group
+    $txtT2Diff.Text  = "$sign h (vs $($ref.Name))"
+    $txtT2Zone.Text  = "$($info.Abbr) ($($info.TzId))"
+    $txtT2Now.Text   = $timeDest.ToString("yyyy-MM-dd HH:mm:ss")
+
+    $lblT2StateClock.Text  = "$($cbT2State.SelectedItem) Time"
+    $lblT2OriginClock.Text = "$($ref.Name) Time"
+
+    $txtT2StateTime.IsEnabled  = $true
+    $txtT2OriginTime.IsEnabled = $true
+    $btnT2Sync.IsEnabled       = $true
+    set_t2_clocks $timeDest.ToString("HH:mm") $timeOrigin.ToString("HH:mm")
+}
+
+# Two-way clock conversion. $fromState = $true when the state box was edited.
+function sync_t2_clock ($fromState) {
+    if ($global:T2Updating) { return }
+    $info = get_t2_selection
+    if (-not $info) { return }
+
+    $srcBox = if ($fromState) { $txtT2StateTime } else { $txtT2OriginTime }
+    $m = [regex]::Match($srcBox.Text.Trim(), '^([01]?\d|2[0-3]):([0-5]\d)$')
+    if (-not $m.Success) { return }   # ignore half-typed values
+
+    $tzState  = get_t2_timezone $info.TzId
+    $tzOrigin = (get_t2_reference).TimeZone
+    $tzSrc = if ($fromState) { $tzState } else { $tzOrigin }
+    $tzDst = if ($fromState) { $tzOrigin } else { $tzState }
+
+    try {
+        # Use "today" in the source timezone so DST offsets are the right ones
+        $todaySrc = [System.TimeZoneInfo]::ConvertTime([System.DateTimeOffset]::UtcNow, $tzSrc).Date
+        $dtSrc = $todaySrc.AddHours([int]$m.Groups[1].Value).AddMinutes([int]$m.Groups[2].Value)
+        $utc   = [System.TimeZoneInfo]::ConvertTimeToUtc($dtSrc, $tzSrc)
+        $dtDst = [System.TimeZoneInfo]::ConvertTimeFromUtc($utc, $tzDst)
+    } catch {
+        return   # e.g. a time that does not exist on a DST changeover day
+    }
+
+    $global:T2Updating = $true
+    try {
+        $dstBox = if ($fromState) { $txtT2OriginTime } else { $txtT2StateTime }
+        $dstBox.Text = $dtDst.ToString("HH:mm")
+    } finally {
+        $global:T2Updating = $false
+    }
+}
+
+function clear_t2_screen {
+    $global:T2Updating = $true
+    try {
+        $cbT2Country.SelectedIndex = -1
+        $cbT2State.Items.Clear()
+        $cbT2State.IsEnabled = $false
+        $txtT2Group.Text = "-"
+        $txtT2Diff.Text  = "-"
+        $txtT2Zone.Text  = "-"
+        $txtT2Now.Text   = "-"
+        $txtT2StateTime.Text  = ""
+        $txtT2OriginTime.Text = ""
+        $txtT2StateTime.IsEnabled  = $false
+        $txtT2OriginTime.IsEnabled = $false
+        $btnT2Sync.IsEnabled = $false
+        $lblT2StateClock.Text = "State Time"
+    } finally {
+        $global:T2Updating = $false
+    }
+}
+
+# Populate combos before wiring events so nothing fires during setup
+$null = $cbT2Origin.Items.Add("Portugal Mainland")
+$null = $cbT2Origin.Items.Add("Azores")
+$cbT2Origin.SelectedIndex = 0
+$global:T2Data.Keys | Sort-Object | ForEach-Object { $null = $cbT2Country.Items.Add($_) }
+
+$cbT2Origin.Add_SelectionChanged({
+    $lblT2OriginClock.Text = "$((get_t2_reference).Name) Time"
+    update_t2_panel
+})
+
+$cbT2Country.Add_SelectionChanged({
+    $cbT2State.Items.Clear()
+    $country = $cbT2Country.SelectedItem
+    if ($country) {
+        $global:T2Data[$country].Keys | Sort-Object | ForEach-Object { $null = $cbT2State.Items.Add($_) }
+        $cbT2State.IsEnabled = $true
+    } else {
+        $cbT2State.IsEnabled = $false
+    }
+    if ($global:T2Updating) { return }
+
+    # Switching country invalidates the previous result
+    $txtT2Group.Text = "-"; $txtT2Diff.Text = "-"; $txtT2Zone.Text = "-"; $txtT2Now.Text = "-"
+    $txtT2StateTime.Text = ""; $txtT2OriginTime.Text = ""
+    $txtT2StateTime.IsEnabled = $false; $txtT2OriginTime.IsEnabled = $false
+    $btnT2Sync.IsEnabled = $false
+})
+
+$cbT2State.Add_SelectionChanged({ update_t2_panel })
+
+$txtT2StateTime.Add_TextChanged({ sync_t2_clock $true })
+$txtT2OriginTime.Add_TextChanged({ sync_t2_clock $false })
+
+$btnT2Sync.Add_Click({ update_t2_panel })
+$btnT2Clear.Add_Click({ clear_t2_screen })
+
+### PATHS LOGIC ###
+
+$fnOpenPath = {
+    $path = $this.Tag
+    if (Test-Path $path) { 
+        Invoke-Item $path 
+    } else { 
+        [System.Windows.MessageBox]::Show("Path not found: $path", "Error") 
+    }
+}
+
+@($btnOpenSDrive, $btnOpenKDrive, $btnOpenZDrive, $btnOpenFS1, $btnOpenFS4, $btnOpenAWS, $btnOpenLRS, $btnOpenPAFE, $btnOpenWallpaper) | ForEach-Object {
+    if ($_) { $_.Add_Click($fnOpenPath) }
+}
+
+
+$window.ShowDialog() | Out-Null
