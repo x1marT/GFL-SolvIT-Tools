@@ -99,7 +99,7 @@ $inputXML = @"
                 <Grid Grid.Row="2" Margin="30">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="250"/>
+                        <ColumnDefinition Width="300"/>
                     </Grid.ColumnDefinitions>
 
                     <StackPanel Grid.Column="0" Name="lapsResultCard" Visibility="Collapsed">
@@ -122,16 +122,45 @@ $inputXML = @"
                         </Border>
                     </StackPanel>
 
-                    <Border Grid.Column="1" Background="White" CornerRadius="10" Margin="20,0,0,0" VerticalAlignment="Top">
-                        <Border.Effect><DropShadowEffect BlurRadius="10" Opacity="0.05"/></Border.Effect>
-                        <Border Padding="15">
-                            <StackPanel>
-                                <TextBlock Text="Recent Searches" FontWeight="Bold" Foreground="#333" Margin="0,0,0,10"/>
-                                <ListBox Name="listLapsHistory" BorderThickness="0" Background="Transparent" Height="200"/>
-                                <Button Name="btnClearHistory" Content="Clear History" Background="Transparent" Foreground="#999" FontSize="10" BorderThickness="0" Margin="0,10,0,0"/>
-                            </StackPanel>
+                    <StackPanel Grid.Column="1" Margin="20,0,0,0" VerticalAlignment="Top">
+                        <Border Background="White" CornerRadius="10">
+                            <Border.Effect><DropShadowEffect BlurRadius="10" Opacity="0.05"/></Border.Effect>
+                            <Border Padding="15">
+                                <StackPanel>
+                                    <TextBlock Text="Recent Searches" FontWeight="Bold" Foreground="#333" Margin="0,0,0,10"/>
+                                    <ListBox Name="listLapsHistory" BorderThickness="0" Background="Transparent" Height="110"/>
+                                    <Button Name="btnClearHistory" Content="Clear History" Background="Transparent" Foreground="#999" FontSize="10" BorderThickness="0" Margin="0,10,0,0"/>
+                                </StackPanel>
+                            </Border>
                         </Border>
-                    </Border>
+
+                        <Border Name="pingPanel" Background="White" CornerRadius="10" Margin="0,15,0,0" Visibility="Collapsed">
+                            <Border.Effect><DropShadowEffect BlurRadius="10" Opacity="0.05"/></Border.Effect>
+                            <Border Padding="15">
+                                <StackPanel>
+                                    <TextBlock Name="pingTitle" Text="Ping" FontWeight="Bold" Foreground="#333"/>
+                                    <TextBlock Name="pingSubtitle" Text="" FontSize="10" Foreground="#888" TextTrimming="CharacterEllipsis"/>
+                                    <Border Name="pingStatusBox" Background="#888888" CornerRadius="8" Margin="0,10,0,0" Padding="12,8">
+                                        <StackPanel>
+                                            <TextBlock Name="pingStatus" Text="CHECKING..." FontSize="18" FontWeight="Bold" Foreground="White"/>
+                                            <TextBlock Name="pingDetail" Text="" FontSize="11" Foreground="White" TextWrapping="Wrap"/>
+                                        </StackPanel>
+                                    </Border>
+                                    <TextBlock Name="pingStats" Text="Sent: 0   Replies: 0   Lost: 0" FontSize="10" Foreground="#666" Margin="0,8,0,6"/>
+                                    <TextBox Name="pingLog" Height="120" IsReadOnly="True" FontFamily="Consolas" FontSize="10" Background="#F9F9F9" BorderBrush="#E5E5E5"
+                                             VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto" TextWrapping="NoWrap"/>
+                                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,10,0,0">
+                                        <Button Name="pingToggle" Content="Stop" Width="80" Height="28" Margin="0,0,8,0" Background="#007ACC" Foreground="White" BorderThickness="0">
+                                            <Button.Resources><Style TargetType="Border"><Setter Property="CornerRadius" Value="5"/></Style></Button.Resources>
+                                        </Button>
+                                        <Button Name="pingClose" Content="Close" Width="80" Height="28" Background="#F1F1F1" BorderThickness="0">
+                                            <Button.Resources><Style TargetType="Border"><Setter Property="CornerRadius" Value="5"/></Style></Button.Resources>
+                                        </Button>
+                                    </StackPanel>
+                                </StackPanel>
+                            </Border>
+                        </Border>
+                    </StackPanel>
                 </Grid>
             </Grid>
 
@@ -1063,51 +1092,28 @@ $btnTier2.Add_Click({ show_screen "screenTier2" $btnTier2 })
 
 ### LAPS LOGIC ###
 
-### PING WINDOW LOGIC ###
+### PING PANEL LOGIC ###
+# The ping panel lives in the LAPS screen (right column, under Recent Searches)
 
-$global:PingWin   = $null   # hashtable of window + controls while the window is open
-$global:PingTimer = $null
+$global:PingWin   = @{
+    Panel     = $pingPanel
+    Title     = $pingTitle
+    Subtitle  = $pingSubtitle
+    StatusBox = $pingStatusBox
+    Status    = $pingStatus
+    Detail    = $pingDetail
+    Stats     = $pingStats
+    Log       = $pingLog
+    Toggle    = $pingToggle
+    Close     = $pingClose
+}
 $global:PingTask  = $null
-$global:PingObj   = $null
+$global:PingObj   = New-Object System.Net.NetworkInformation.Ping
+$global:PingLines = New-Object System.Collections.Generic.List[string]
 
-$global:PingXaml = @'
-<Window xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="Ping" Width="420" Height="420" MinWidth="360" MinHeight="340"
-        Background="#F3F3F3" FontFamily="Segoe UI" ShowActivated="False" WindowStartupLocation="Manual">
-    <Grid Margin="20">
-        <Grid.RowDefinitions>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="*"/>
-            <RowDefinition Height="Auto"/>
-        </Grid.RowDefinitions>
-
-        <StackPanel Grid.Row="0">
-            <TextBlock Name="pingTitle" Text="-" FontSize="20" FontWeight="Bold" Foreground="#2D2D30"/>
-            <TextBlock Name="pingSubtitle" Text="" FontSize="11" Foreground="#888"/>
-        </StackPanel>
-
-        <Border Grid.Row="1" Name="pingStatusBox" Background="#888888" CornerRadius="8" Margin="0,15,0,0" Padding="15,12">
-            <StackPanel>
-                <TextBlock Name="pingStatus" Text="CHECKING..." FontSize="22" FontWeight="Bold" Foreground="White"/>
-                <TextBlock Name="pingDetail" Text="" FontSize="12" Foreground="White" Margin="0,2,0,0"/>
-            </StackPanel>
-        </Border>
-
-        <TextBlock Grid.Row="2" Name="pingStats" Text="Sent: 0   Replies: 0   Lost: 0" FontSize="11" Foreground="#666" Margin="0,10,0,8"/>
-
-        <TextBox Grid.Row="3" Name="pingLog" IsReadOnly="True" FontFamily="Consolas" FontSize="11" Background="White" BorderBrush="#DDD"
-                 VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto" TextWrapping="NoWrap"/>
-
-        <StackPanel Grid.Row="4" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,12,0,0">
-            <Button Name="pingToggle" Content="Stop" Width="90" Height="30" Margin="0,0,10,0" Background="#F1F1F1"/>
-            <Button Name="pingClose" Content="Close" Width="90" Height="30" Background="#F1F1F1"/>
-        </StackPanel>
-    </Grid>
-</Window>
-'@
+$global:PingTimer = New-Object System.Windows.Threading.DispatcherTimer
+$global:PingTimer.Interval = [TimeSpan]::FromSeconds(1)
+$global:PingTimer.Add_Tick({ ping_tick })
 
 function set_ping_color ($hex) {
     $global:PingWin.StatusBox.Background = [System.Windows.Media.BrushConverter]::new().ConvertFromString($hex)
@@ -1121,8 +1127,7 @@ function reset_ping_state ($target, $tag) {
     $global:PingLines  = New-Object System.Collections.Generic.List[string]
 
     $w = $global:PingWin
-    $w.Window.Title  = "Ping - $tag"
-    $w.Title.Text    = $tag
+    $w.Title.Text    = "Ping - $tag"
     $w.Subtitle.Text = "Pinging $target ($($global:PingCount) times)"
     $w.Log.Text      = ""
 }
@@ -1258,64 +1263,31 @@ function stop_ping {
     if ($global:PingTimer) { $global:PingTimer.Stop() }
 }
 
-function show_ping_window ($target, $tag) {
-    # Window already open: just retarget it
-    if ($global:PingWin) {
-        reset_ping_state $target $tag
-        start_ping_run
-        return
-    }
-
-    $reader = New-Object System.Xml.XmlNodeReader ([xml]$global:PingXaml)
-    $win = [Windows.Markup.XamlReader]::Load($reader)
-
-    $global:PingWin = @{
-        Window    = $win
-        Title     = $win.FindName("pingTitle")
-        Subtitle  = $win.FindName("pingSubtitle")
-        StatusBox = $win.FindName("pingStatusBox")
-        Status    = $win.FindName("pingStatus")
-        Detail    = $win.FindName("pingDetail")
-        Stats     = $win.FindName("pingStats")
-        Log       = $win.FindName("pingLog")
-        Toggle    = $win.FindName("pingToggle")
-        Close     = $win.FindName("pingClose")
-    }
-    $global:PingObj  = New-Object System.Net.NetworkInformation.Ping
-    $global:PingTask = $null
-
-    $win.Owner = $window
-    $win.Left  = $window.Left + $window.ActualWidth + 10
-    $win.Top   = $window.Top
-    # Keep it on screen if the main window is already at the right edge
-    $maxLeft = [System.Windows.SystemParameters]::VirtualScreenWidth - $win.Width
-    if ($win.Left -gt $maxLeft) { $win.Left = [Math]::Max(0, $maxLeft) }
-
-    $global:PingTimer = New-Object System.Windows.Threading.DispatcherTimer
-    $global:PingTimer.Interval = [TimeSpan]::FromSeconds(1)
-    $global:PingTimer.Add_Tick({ ping_tick })
-
-    # Stop while a run is going, Re-Ping (5 more) once it's done
-    $global:PingWin.Toggle.Add_Click({
-        if ($global:PingTimer.IsEnabled) {
-            finish_ping_run $true
-        } else {
-            start_ping_run
-        }
-    })
-    $global:PingWin.Close.Add_Click({ $global:PingWin.Window.Close() })
-    $win.Add_Closed({
-        stop_ping
-        $global:PingTask  = $null
-        $global:PingTimer = $null
-        $global:PingWin   = $null
-        if ($global:PingObj) { $global:PingObj.Dispose(); $global:PingObj = $null }
-    })
-
+function show_ping_panel ($target, $tag) {
+    $global:PingWin.Panel.Visibility = "Visible"
     reset_ping_state $target $tag
-    $win.Show()
     start_ping_run
 }
+
+# Stop while a run is going, Re-Ping (5 more) once it's done
+$pingToggle.Add_Click({
+    if ($global:PingTimer.IsEnabled) {
+        finish_ping_run $true
+    } else {
+        start_ping_run
+    }
+})
+
+# Close stops any run and hides the panel until the next search
+$pingClose.Add_Click({
+    stop_ping
+    $pingPanel.Visibility = "Collapsed"
+})
+
+$window.Add_Closed({
+    stop_ping
+    if ($global:PingObj) { $global:PingObj.Dispose(); $global:PingObj = $null }
+})
 
 function search_asset_tag {
     $tag = $assetTagSearch.Text.Trim()
@@ -1361,7 +1333,7 @@ function search_asset_tag {
         }
 
         # Ping runs whether or not the LAPS lookup worked, so you can still see if the PC is online
-        show_ping_window $pingTarget $tag
+        show_ping_panel $pingTarget $tag
     }
 }
 
