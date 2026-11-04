@@ -1,4 +1,27 @@
-﻿Add-Type -AssemblyName PresentationFramework, PresentationCore, WindowsBase
+﻿# If anything fails while starting, show the error instead of letting the console window close silently
+# (this is what happens with right-click > Run with PowerShell). A copy is saved in %TEMP%.
+trap {
+    $errText = "GFL SolvIT Tools could not start.`n`n$($_.Exception.Message)`n`nLine $($_.InvocationInfo.ScriptLineNumber): $("$($_.InvocationInfo.Line)".Trim())"
+    $logPath = Join-Path $env:TEMP "GFLSolvITTools_error.log"
+    try { "[$(Get-Date)] $errText" | Out-File -FilePath $logPath -Append -Encoding UTF8 } catch { }
+    try {
+        Add-Type -AssemblyName PresentationFramework -ErrorAction Stop
+        [System.Windows.MessageBox]::Show("$errText`n`nA copy was saved to:`n$logPath", "GFL SolvIT Tools", "OK", "Error") | Out-Null
+    } catch {
+        Write-Host $errText -ForegroundColor Red
+        Read-Host "Press Enter to close"
+    }
+    exit 1
+}
+
+# WPF windows need a single-threaded (STA) PowerShell. ISE always is; a console window may not be,
+# so relaunch this script in STA mode if needed.
+if ([System.Threading.Thread]::CurrentThread.ApartmentState -ne [System.Threading.ApartmentState]::STA -and $PSCommandPath) {
+    Start-Process powershell.exe -ArgumentList "-NoProfile -STA -File `"$PSCommandPath`""
+    exit
+}
+
+Add-Type -AssemblyName PresentationFramework, PresentationCore, WindowsBase
 Add-Type -AssemblyName Microsoft.VisualBasic
 
 # Shown at the bottom of the side menu - update when releasing a new version
@@ -982,8 +1005,7 @@ try {
     $reader = New-Object System.Xml.XmlNodeReader $xaml
     $window = [Windows.Markup.XamlReader]::Load($reader)
 } catch {
-    Write-Error "XAML Load Failed: $($_.Exception.Message)"
-    exit
+    throw "XAML Load Failed: $($_.Exception.Message)"
 }
 
 $xaml.SelectNodes("//*[@*[local-name()='Name']]") | ForEach-Object {
