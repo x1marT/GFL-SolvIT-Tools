@@ -1,7 +1,25 @@
-﻿Add-Type -AssemblyName PresentationFramework, PresentationCore, WindowsBase
+trap {
+    $errText = "GFL SolvIT Tools could not start.`n`n$($_.Exception.Message)`n`nLine $($_.InvocationInfo.ScriptLineNumber): $("$($_.InvocationInfo.Line)".Trim())"
+    $logPath = Join-Path $env:TEMP "GFLSolvITTools_error.log"
+    try { "[$(Get-Date)] $errText" | Out-File -FilePath $logPath -Append -Encoding UTF8 } catch { }
+    try {
+        Add-Type -AssemblyName PresentationFramework -ErrorAction Stop
+        [System.Windows.MessageBox]::Show("$errText`n`nA copy was saved to:`n$logPath", "GFL SolvIT Tools", "OK", "Error") | Out-Null
+    } catch {
+        Write-Host $errText -ForegroundColor Red
+        Read-Host "Press Enter to close"
+    }
+    exit 1
+}
+
+if ([System.Threading.Thread]::CurrentThread.ApartmentState -ne [System.Threading.ApartmentState]::STA -and $PSCommandPath) {
+    Start-Process powershell.exe -ArgumentList "-NoProfile -STA -File `"$PSCommandPath`""
+    exit
+}
+
+Add-Type -AssemblyName PresentationFramework, PresentationCore, WindowsBase
 Add-Type -AssemblyName Microsoft.VisualBasic
 
-# Shown at the bottom of the side menu - update when releasing a new version
 $script:AppVersionDate = "09/09/2026"
 
 $inputXML = @"
@@ -137,8 +155,6 @@ $inputXML = @"
                             </Border>
                         </Border>
 
-                        <!-- Shadow is drawn on a separate layer behind the card; putting an Effect on the card itself
-                             renders its text as a bitmap and makes it look blurry -->
                         <Grid Name="pingPanel" Margin="0,15,0,0" Visibility="Collapsed"
                               UseLayoutRounding="True" SnapsToDevicePixels="True"
                               TextOptions.TextFormattingMode="Display" TextOptions.TextRenderingMode="ClearType">
@@ -982,8 +998,7 @@ try {
     $reader = New-Object System.Xml.XmlNodeReader $xaml
     $window = [Windows.Markup.XamlReader]::Load($reader)
 } catch {
-    Write-Error "XAML Load Failed: $($_.Exception.Message)"
-    exit
+    throw "XAML Load Failed: $($_.Exception.Message)"
 }
 
 $xaml.SelectNodes("//*[@*[local-name()='Name']]") | ForEach-Object {
@@ -1041,7 +1056,6 @@ while ($null -eq $global:MyCred) {
 
         $errMsg = $_.Exception.Message
 
-        # Without the AD module nothing in this tool can work, so say so instead of "wrong password"
         if (-not (Get-Command Get-ADUser -ErrorAction SilentlyContinue)) {
             [System.Windows.MessageBox]::Show(
                 "The Active Directory PowerShell module is not installed on this computer.`n`nInstall 'RSAT: Active Directory Domain Services and Lightweight Directory Services Tools' and run the tool again.",
@@ -1064,7 +1078,6 @@ while ($null -eq $global:MyCred) {
                 [System.Windows.MessageBoxImage]::Error
             )
         } else {
-            # Not a password problem (e.g. no network/VPN, domain controller unreachable)
             $retry = [System.Windows.MessageBox]::Show(
                 "Could not verify your credentials:`n`n$errMsg`n`nCheck that you are connected to the GFL network (or VPN).`n`nTry again?",
                 "Login Error",
@@ -1079,7 +1092,6 @@ while ($null -eq $global:MyCred) {
     }
 }
 
-# Resolve the domain controller once, so every lookup and change goes to the same one
 try {
     $global:CurrentDC = (Get-ADDomainController -ErrorAction Stop).HostName
 } catch {
@@ -1087,11 +1099,6 @@ try {
 }
 
 ### BACKGROUND WORK ###
-# AD lookups and path checks run in background runspaces so the window never freezes.
-# start_bg runs $work (a scriptblock with a param() block) with $argList in the background, then calls
-# $onDone on the UI thread as: & $onDone $result $state   ($result has .Ok, .Data, .Error, .ErrorType)
-# Only the newest request per channel is delivered, so a slow old search can't overwrite a newer one.
-# NOTE: $onDone runs later, so it can't see the calling function's local variables - pass them in $state.
 
 $bgSession = [System.Management.Automation.Runspaces.InitialSessionState]::CreateDefault()
 $bgSession.ImportPSModule(@("ActiveDirectory"))
@@ -1109,7 +1116,6 @@ function start_bg ($channel, [scriptblock]$work, [object[]]$argList, [scriptbloc
     $id = [guid]::NewGuid().ToString()
     $global:BgLatest[$channel] = $id
 
-    # The work is sent as text: a scriptblock belongs to the UI runspace and would run back on the UI thread
     $wrapper = @"
 try {
     `$data = & { $($work.ToString()) } @args
@@ -1161,7 +1167,6 @@ function bg_tick {
     if ($global:BgJobs.Count -eq 0) { $global:BgTimer.Stop() }
 }
 
-# Disables a button and shows a "working" caption while a background task runs
 $global:BusyText = @{}
 function set_busy ($button, [bool]$busy, $text = "Searching...") {
     if ($busy) {
@@ -1182,14 +1187,12 @@ function log_error ($section, $target, $message) {
     Write-Host "-----------------------" -ForegroundColor Red
 }
 
-# Shows an error next to a search box; the full text is also in the tooltip in case it's cut off
 function show_search_error ($label, $text) {
     $label.Text       = $text
     $label.ToolTip    = $text
     $label.Visibility = "Visible"
 }
 
-# "CN=Group Name,OU=...,DC=..." -> "Group Name"
 function group_name_from_dn ($dn) {
     if ($dn -match '^CN=(?<name>(?:[^\\,]|\\.)+),') { return ($Matches.name -replace '\\', '') }
     return $null
@@ -1220,7 +1223,6 @@ $btnTier2.Add_Click({ show_screen "screenTier2" $btnTier2 })
 ### LAPS LOGIC ###
 
 ### PING PANEL LOGIC ###
-# The ping panel lives in the LAPS screen (right column, under Recent Searches)
 
 $global:PingUI    = @{
     Panel     = $pingPanel
@@ -1246,9 +1248,8 @@ function set_ping_color ($hex) {
     $global:PingUI.StatusBox.Background = [System.Windows.Media.BrushConverter]::new().ConvertFromString($hex)
 }
 
-$global:PingCount = 5   # same as Windows "ping <host>"
+$global:PingCount = 5
 
-# New target (new search): set titles and clear the log
 function reset_ping_state ($target, $tag) {
     $global:PingTarget = $target
     $global:PingLines  = New-Object System.Collections.Generic.List[string]
@@ -1271,10 +1272,7 @@ function update_ping_stats {
     $global:PingUI.Stats.Text = "Sent: $($global:PingSent)   Replies: $($global:PingOk)   Lost: $lost"
 }
 
-# Starts a fresh run of 5 pings (used by a new search and by the Re-Ping button)
 function start_ping_run {
-    # A Ping object only allows one request at a time. If a ping is still
-    # in flight, reusing it throws "an asynchronous call is already in progress", so start fresh.
     if ($global:PingTask -and -not $global:PingTask.IsCompleted) {
         $global:PingObj = New-Object System.Net.NetworkInformation.Ping
     }
@@ -1297,7 +1295,6 @@ function start_ping_run {
     ping_tick
 }
 
-# Run finished (or was stopped): show the overall result, like the summary at the end of CMD ping
 function finish_ping_run ($stopped) {
     stop_ping
     $w = $global:PingUI
@@ -1325,7 +1322,6 @@ function finish_ping_run ($stopped) {
 
         $w.Status.Text = "ONLINE"
         $w.Detail.Text = "$($global:PingAddr)  -  Avg $avg ms  ($ok/$sent replies)"
-        # Amber when some pings were lost, green when all came back
         set_ping_color $(if ($lost -gt 0) { "#C77C02" } else { "#2E9E5B" })
     } else {
         $w.Status.Text = "OFFLINE"
@@ -1334,7 +1330,6 @@ function finish_ping_run ($stopped) {
     }
 }
 
-# Non-blocking: each tick either collects the finished ping or starts a new one, so the UI never freezes
 function ping_tick {
     if (-not $global:PingUI) { return }
     $w = $global:PingUI
@@ -1396,7 +1391,6 @@ function show_ping_panel ($target, $tag) {
     start_ping_run
 }
 
-# Stop while a run is going, Re-Ping (5 more) once it's done
 $pingToggle.Add_Click({
     if ($global:PingTimer.IsEnabled) {
         finish_ping_run $true
@@ -1405,7 +1399,6 @@ $pingToggle.Add_Click({
     }
 })
 
-# Close stops any run and hides the panel until the next search
 $pingClose.Add_Click({
     stop_ping
     $pingPanel.Visibility = "Collapsed"
@@ -1415,12 +1408,10 @@ $window.Add_Closed({
     stop_ping
     if ($global:PingObj) { $global:PingObj.Dispose(); $global:PingObj = $null }
     if ($global:BgTimer) { $global:BgTimer.Stop() }
-    # BeginClose doesn't wait, so a hung lookup (e.g. an unreachable share) can't stop the app closing
     if ($global:BgPool) { $null = $global:BgPool.BeginClose($null, $null) }
 })
 
 function add_laps_history ($tag) {
-    # -eq is case-insensitive, so "gfl044230" and "GFL044230" count as the same entry
     $existing = @($listLapsHistory.Items | Where-Object { $_ -eq $tag })
     foreach ($e in $existing) { $listLapsHistory.Items.Remove($e) }
 
@@ -1441,7 +1432,6 @@ function search_asset_tag {
     start_bg "laps" {
         param($tag, $cred, $dc)
 
-        # Computer object first (ping target + OU). If this fails we still want the LAPS password.
         $computer = $null; $computerError = $null; $computerNotFound = $false
         try {
             $computer = Get-ADComputer -Identity $tag -Properties CanonicalName, DNSHostName -Server $dc -Credential $cred -ErrorAction Stop
@@ -1501,7 +1491,6 @@ function search_asset_tag {
             }
         }
 
-        # Ping runs whether or not the LAPS lookup worked, so you can still see if the PC is online
         show_ping_panel $pingTarget $tag
     } @{ Tag = $tag }
 }
@@ -1525,7 +1514,6 @@ $btnsearchLaps.Add_Click({ search_asset_tag })
 
 ### USER SEARCH LOGIC ###
 
-# Switches the User Info sub-tabs (Information / Groups / Apps): shows the area and highlights its button
 function select_user_tab ($tab) {
     $userContentArea.Visibility = if ($tab -eq "info")   { "Visible" } else { "Collapsed" }
     $userGroupsArea.Visibility  = if ($tab -eq "groups") { "Visible" } else { "Collapsed" }
@@ -1575,7 +1563,7 @@ function search_user {
 
     start_bg "user" {
         param($user, $dc)
-        $safe = $user -replace "'", "''"   # an apostrophe (O'Brien) would otherwise break the filter
+        $safe = $user -replace "'", "''"
         $filter = "SamAccountName -eq '$safe' -or DisplayName -like '*$safe*' -or Name -like '*$safe*'"
 
         @(Get-ADUser -Filter $filter -Server $dc -Properties DisplayName, Title, EmailAddress, Manager -ErrorAction Stop | ForEach-Object {
@@ -1777,7 +1765,7 @@ function get_user_groups {
         @((Get-ADUser -Identity $userDN -Properties memberOf -Server $dc -ErrorAction Stop).memberOf)
     } @($global:currentLoadedUser, $global:CurrentDC) {
         param($r, $s)
-        if ($s.UserDN -ne $global:currentLoadedUser) { return }   # a different user was loaded meanwhile
+        if ($s.UserDN -ne $global:currentLoadedUser) { return }
 
         if (-not $r.Ok) {
             Write-Host "Error loading groups: $($r.Error)" -ForegroundColor Red
@@ -1786,7 +1774,6 @@ function get_user_groups {
         }
 
         $listUserGroups.Items.Clear()
-        # Keep the full DN on each row so removing a group never depends on its display name
         $rows = foreach ($dn in @($r.Data | Where-Object { $_ })) { [PSCustomObject]@{ GroupName = (group_name_from_dn $dn); DN = $dn } }
         $rows | Sort-Object GroupName | ForEach-Object { $listUserGroups.Items.Add($_) | Out-Null }
 
@@ -1884,7 +1871,7 @@ function get_apps {
         @((Get-ADUser -Identity $userDN -Properties memberOf -Server $dc -ErrorAction Stop).memberOf)
     } @($global:currentLoadedUser, $global:CurrentDC) {
         param($r, $s)
-        if ($s.UserDN -ne $global:currentLoadedUser) { return }   # a different user was loaded meanwhile
+        if ($s.UserDN -ne $global:currentLoadedUser) { return }
 
         if (-not $r.Ok) {
             Write-Warning "Could not retrieve groups: $($r.Error)"
@@ -2182,7 +2169,6 @@ function toggle_groups ([string]$GroupName) {
 
     try {
         $memberOfDNs = @((Get-ADUser -Identity $global:currentLoadedUser -Properties memberOf -Server $global:CurrentDC -ErrorAction Stop).memberOf)
-        # Use the group's full DN for removal so it works even when its CN and account name differ
         $memberDN = $memberOfDNs | Where-Object { (group_name_from_dn $_) -eq $GroupName } | Select-Object -First 1
 
         if ($memberDN) {
@@ -2197,30 +2183,23 @@ function toggle_groups ([string]$GroupName) {
     }
 }
 
-# Trux Click Events
 $btnToggleTruxAWS.Add_Click({ toggle_groups "CTX - AWS - APP - Trux" })
 $btnToggleTruxMand.Add_Click({ toggle_groups "Trux User Group" })
 
-# Tower Click Events
 $btnToggleTowerAWS.Add_Click({ toggle_groups "CTX - AWS - APP - Tower" })
 
-# M5 Click Events
 $btnToggleM5US.Add_Click({ toggle_groups "M5 US Users" })
 $btnToggleM5CA.Add_Click({ toggle_groups "M5 CA Users" })
 
-# OMS Click Events
 $btnToggleOMSV30.Add_Click({ toggle_groups "OMSV30" })
 $btnToggleOMSV30DEV.Add_Click({ toggle_groups "OMSV30DEV" })
 
-# CieTrade Click Events
 $btnToggleCieAWS.Add_Click({ toggle_groups "CTX - AWS - APP - Cietrade" })
 $btnToggleCieScale1.Add_Click({ toggle_groups "CTX - AWS - APP - Cietrade Scale 1" })
 $btnToggleCieScale2.Add_Click({ toggle_groups "CTX - AWS - APP - Cietrade Scale 2" })
 
-# PCScale Click Events
 $btnTogglePCScaleAWS.Add_Click({ toggle_groups "CTX - AWS - APP - PC Scale" })
 
-# Cognos Click Events
 $btnToggleCognosCTX.Add_Click({ toggle_groups "CTX - IBM Cognos TM1 Client" })
 $btnToggleCognosZscaler.Add_Click({ toggle_groups "Zscaler-ZPA-Cognos" })
 
@@ -2292,7 +2271,7 @@ $btnUpdateAttributes.Add_Click({
             $adParams = @{
                 Identity    = $global:currentLoadedUser
                 Credential  = $global:MyCred
-                Server      = $global:CurrentDC   # same DC as the reload below, so the new values show straight away
+                Server      = $global:CurrentDC
                 ErrorAction = "Stop"
             }
             $replaceHash = @{}
@@ -2361,8 +2340,6 @@ $btnSaveExpiration.Add_Click({
     }
 })
 
-# Digits only, but keep normal editing keys (arrows, Home/End, Ctrl+A/C/V/X/Z) working.
-# Pasted text is still checked by the validation in Update Attributes.
 $numericFilter = {
     $key  = $_.Key
     $mods = [System.Windows.Input.Keyboard]::Modifiers
@@ -2370,8 +2347,8 @@ $numericFilter = {
     if (([int]$mods -band [int][System.Windows.Input.ModifierKeys]::Control) -ne 0) { return }
 
     $isShift  = ([int]$mods -band [int][System.Windows.Input.ModifierKeys]::Shift) -ne 0
-    $isDigit  = ([int]$key -ge 34 -and [int]$key -le 43 -and -not $isShift) -or   # D0-D9 (Shift gives symbols)
-                ([int]$key -ge 74 -and [int]$key -le 83)                           # NumPad0-NumPad9
+    $isDigit  = ([int]$key -ge 34 -and [int]$key -le 43 -and -not $isShift) -or
+                ([int]$key -ge 74 -and [int]$key -le 83)
     $isEdit   = $key.ToString() -in @("Back", "Delete", "Tab", "Left", "Right", "Home", "End", "Enter")
 
     if (-not ($isDigit -or $isEdit)) { $_.Handled = $true }
@@ -2573,7 +2550,6 @@ $listPrinterResults.Add_MouseDoubleClick({
 
 ### TIER 2 LOOKUP LOGIC ###
 
-# Data-driven: add a state/province by adding one line. Group = T2 escalation team, TzId = Windows timezone id.
 $global:T2Data = @{
     "Canada" = @{
         "British Columbia" = @{ Group = "Tier 2 Service Support - CA Western & Central"; TzId = "Pacific Standard Time"; Abbr = "PST/PDT" }
@@ -2671,7 +2647,6 @@ function update_t2_panel {
     set_t2_clocks $timeDest.ToString("HH:mm") $timeOrigin.ToString("HH:mm")
 }
 
-# Two-way clock conversion. $fromState = $true when the state box was edited.
 function sync_t2_clock ($fromState) {
     if ($global:T2Updating) { return }
     $info = get_t2_selection
@@ -2679,7 +2654,7 @@ function sync_t2_clock ($fromState) {
 
     $srcBox = if ($fromState) { $txtT2StateTime } else { $txtT2OriginTime }
     $m = [regex]::Match($srcBox.Text.Trim(), '^([01]?\d|2[0-3]):([0-5]\d)$')
-    if (-not $m.Success) { return }   # ignore half-typed values
+    if (-not $m.Success) { return }
 
     $tzState  = get_t2_timezone $info.TzId
     $tzOrigin = (get_t2_reference).TimeZone
@@ -2687,13 +2662,12 @@ function sync_t2_clock ($fromState) {
     $tzDst = if ($fromState) { $tzOrigin } else { $tzState }
 
     try {
-        # Use "today" in the source timezone so DST offsets are the right ones
         $todaySrc = [System.TimeZoneInfo]::ConvertTime([System.DateTimeOffset]::UtcNow, $tzSrc).Date
         $dtSrc = $todaySrc.AddHours([int]$m.Groups[1].Value).AddMinutes([int]$m.Groups[2].Value)
         $utc   = [System.TimeZoneInfo]::ConvertTimeToUtc($dtSrc, $tzSrc)
         $dtDst = [System.TimeZoneInfo]::ConvertTimeFromUtc($utc, $tzDst)
     } catch {
-        return   # e.g. a time that does not exist on a DST changeover day
+        return
     }
 
     $global:T2Updating = $true
@@ -2726,7 +2700,6 @@ function clear_t2_screen {
     }
 }
 
-# Populate combos before wiring events so nothing fires during setup
 $null = $cbT2Origin.Items.Add("Portugal Mainland")
 $null = $cbT2Origin.Items.Add("Azores")
 $cbT2Origin.SelectedIndex = 0
@@ -2748,7 +2721,6 @@ $cbT2Country.Add_SelectionChanged({
     }
     if ($global:T2Updating) { return }
 
-    # Switching country invalidates the previous result
     $txtT2Group.Text = "-"; $txtT2Diff.Text = "-"; $txtT2Zone.Text = "-"; $txtT2Now.Text = "-"
     $txtT2StateTime.Text = ""; $txtT2OriginTime.Text = ""
     $txtT2StateTime.IsEnabled = $false; $txtT2OriginTime.IsEnabled = $false
@@ -2765,7 +2737,6 @@ $btnT2Clear.Add_Click({ clear_t2_screen })
 
 ### PATHS LOGIC ###
 
-# Test-Path on an unreachable share can hang for a while, so it runs in the background
 $fnOpenPath = {
     $btn  = $this
     $path = $btn.Tag
