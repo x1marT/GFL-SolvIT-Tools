@@ -134,9 +134,15 @@ $inputXML = @"
                             </Border>
                         </Border>
 
-                        <Border Name="pingPanel" Background="White" CornerRadius="10" Margin="0,15,0,0" Visibility="Collapsed">
-                            <Border.Effect><DropShadowEffect BlurRadius="10" Opacity="0.05"/></Border.Effect>
-                            <Border Padding="15">
+                        <!-- Shadow is drawn on a separate layer behind the card; putting an Effect on the card itself
+                             renders its text as a bitmap and makes it look blurry -->
+                        <Grid Name="pingPanel" Margin="0,15,0,0" Visibility="Collapsed"
+                              UseLayoutRounding="True" SnapsToDevicePixels="True"
+                              TextOptions.TextFormattingMode="Display" TextOptions.TextRenderingMode="ClearType">
+                            <Border Background="White" CornerRadius="10">
+                                <Border.Effect><DropShadowEffect BlurRadius="10" Opacity="0.05"/></Border.Effect>
+                            </Border>
+                            <Border Background="White" CornerRadius="10" Padding="15">
                                 <StackPanel>
                                     <TextBlock Name="pingTitle" Text="Ping" FontWeight="Bold" Foreground="#333"/>
                                     <TextBlock Name="pingSubtitle" Text="" FontSize="10" Foreground="#888" TextTrimming="CharacterEllipsis"/>
@@ -159,7 +165,7 @@ $inputXML = @"
                                     </StackPanel>
                                 </StackPanel>
                             </Border>
-                        </Border>
+                        </Grid>
                     </StackPanel>
                 </Grid>
             </Grid>
