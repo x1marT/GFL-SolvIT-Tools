@@ -1113,27 +1113,18 @@ function set_ping_color ($hex) {
     $global:PingWin.StatusBox.Background = [System.Windows.Media.BrushConverter]::new().ConvertFromString($hex)
 }
 
+$global:PingCount = 5   # same as Windows "ping <host>"
+
+# New target (new search): set titles and clear the log
 function reset_ping_state ($target, $tag) {
-    # A Ping object only allows one request at a time. If a ping for the previous tag is still
-    # in flight, reusing it throws "an asynchronous call is already in progress", so start fresh.
-    if ($global:PingTask -and -not $global:PingTask.IsCompleted) {
-        $global:PingObj = New-Object System.Net.NetworkInformation.Ping
-    }
-    $global:PingTask  = $null
-    $global:PingSent  = 0
-    $global:PingOk    = 0
-    $global:PingLines = New-Object System.Collections.Generic.List[string]
     $global:PingTarget = $target
+    $global:PingLines  = New-Object System.Collections.Generic.List[string]
 
     $w = $global:PingWin
-    $w.Window.Title    = "Ping - $tag"
-    $w.Title.Text      = $tag
-    $w.Subtitle.Text   = if ($target -ne $tag) { "Pinging $target" } else { "Pinging $target (continuous)" }
-    $w.Status.Text     = "CHECKING..."
-    $w.Detail.Text     = ""
-    $w.Stats.Text      = "Sent: 0   Replies: 0   Lost: 0"
-    $w.Log.Text        = ""
-    set_ping_color "#888888"
+    $w.Window.Title  = "Ping - $tag"
+    $w.Title.Text    = $tag
+    $w.Subtitle.Text = "Pinging $target ($($global:PingCount) times)"
+    $w.Log.Text      = ""
 }
 
 function add_ping_line ($text) {
@@ -1141,6 +1132,74 @@ function add_ping_line ($text) {
     while ($global:PingLines.Count -gt 100) { $global:PingLines.RemoveAt(0) }
     $global:PingWin.Log.Text = ($global:PingLines -join "`r`n")
     $global:PingWin.Log.ScrollToEnd()
+}
+
+function update_ping_stats {
+    $lost = $global:PingSent - $global:PingOk
+    $global:PingWin.Stats.Text = "Sent: $($global:PingSent)   Replies: $($global:PingOk)   Lost: $lost"
+}
+
+# Starts a fresh run of 5 pings (used by a new search and by the Re-Ping button)
+function start_ping_run {
+    # A Ping object only allows one request at a time. If a ping is still
+    # in flight, reusing it throws "an asynchronous call is already in progress", so start fresh.
+    if ($global:PingTask -and -not $global:PingTask.IsCompleted) {
+        $global:PingObj = New-Object System.Net.NetworkInformation.Ping
+    }
+    $global:PingTask  = $null
+    $global:PingSent  = 0
+    $global:PingOk    = 0
+    $global:PingTimes = New-Object System.Collections.Generic.List[long]
+    $global:PingAddr  = $null
+
+    $w = $global:PingWin
+    $w.Status.Text = "CHECKING..."
+    $w.Detail.Text = ""
+    set_ping_color "#888888"
+    update_ping_stats
+    if ($global:PingLines.Count -gt 0) { add_ping_line "----------------------------------------" }
+    add_ping_line "Pinging $($global:PingTarget) $($global:PingCount) times:"
+
+    $w.Toggle.Content = "Stop"
+    $global:PingTimer.Start()
+    ping_tick
+}
+
+# Run finished (or was stopped): show the overall result, like the summary at the end of CMD ping
+function finish_ping_run ($stopped) {
+    stop_ping
+    $w = $global:PingWin
+    $w.Toggle.Content = "Re-Ping"
+
+    $sent = $global:PingSent
+    $ok   = $global:PingOk
+    if ($stopped) { add_ping_line "Stopped" }
+    if ($sent -eq 0) {
+        $w.Status.Text = "STOPPED"
+        $w.Detail.Text = "No pings sent"
+        set_ping_color "#888888"
+        return
+    }
+
+    $lost    = $sent - $ok
+    $lossPct = [Math]::Round(($lost / $sent) * 100)
+    add_ping_line "Sent = $sent, Received = $ok, Lost = $lost ($lossPct% loss)"
+
+    if ($ok -gt 0) {
+        $min = ($global:PingTimes | Measure-Object -Minimum).Minimum
+        $max = ($global:PingTimes | Measure-Object -Maximum).Maximum
+        $avg = [Math]::Round(($global:PingTimes | Measure-Object -Average).Average)
+        add_ping_line "Minimum = $($min)ms, Maximum = $($max)ms, Average = $($avg)ms"
+
+        $w.Status.Text = "ONLINE"
+        $w.Detail.Text = "$($global:PingAddr)  -  Avg $avg ms  ($ok/$sent replies)"
+        # Amber when some pings were lost, green when all came back
+        set_ping_color $(if ($lost -gt 0) { "#C77C02" } else { "#2E9E5B" })
+    } else {
+        $w.Status.Text = "OFFLINE"
+        $w.Detail.Text = "No replies  (0/$sent, 100% loss)"
+        set_ping_color "#D13438"
+    }
 }
 
 # Non-blocking: each tick either collects the finished ping or starts a new one, so the UI never freezes
@@ -1164,10 +1223,12 @@ function ping_tick {
             $r = $task.Result
             if ($r.Status -eq [System.Net.NetworkInformation.IPStatus]::Success) {
                 $global:PingOk++
+                $global:PingTimes.Add($r.RoundtripTime)
+                $global:PingAddr = $r.Address
                 $w.Status.Text = "ONLINE"
                 $w.Detail.Text = "$($r.Address)  -  $($r.RoundtripTime) ms"
                 set_ping_color "#2E9E5B"
-                add_ping_line "Reply from $($r.Address): $($r.RoundtripTime) ms"
+                add_ping_line "Reply from $($r.Address): time=$($r.RoundtripTime)ms"
             } else {
                 $w.Status.Text = "OFFLINE"
                 $w.Detail.Text = "$($r.Status)"
@@ -1175,8 +1236,12 @@ function ping_tick {
                 add_ping_line "$($r.Status)"
             }
         }
-        $lost = $global:PingSent - $global:PingOk
-        $w.Stats.Text = "Sent: $($global:PingSent)   Replies: $($global:PingOk)   Lost: $lost"
+        update_ping_stats
+
+        if ($global:PingSent -ge $global:PingCount) {
+            finish_ping_run $false
+            return
+        }
     }
 
     try {
@@ -1184,6 +1249,8 @@ function ping_tick {
     } catch {
         $w.Status.Text = "ERROR"
         $w.Detail.Text = $_.Exception.Message
+        add_ping_line $_.Exception.Message
+        finish_ping_run $false
     }
 }
 
@@ -1195,9 +1262,7 @@ function show_ping_window ($target, $tag) {
     # Window already open: just retarget it
     if ($global:PingWin) {
         reset_ping_state $target $tag
-        $global:PingTimer.Start()
-        $global:PingWin.Toggle.Content = "Stop"
-        ping_tick
+        start_ping_run
         return
     }
 
@@ -1216,7 +1281,8 @@ function show_ping_window ($target, $tag) {
         Toggle    = $win.FindName("pingToggle")
         Close     = $win.FindName("pingClose")
     }
-    $global:PingObj = New-Object System.Net.NetworkInformation.Ping
+    $global:PingObj  = New-Object System.Net.NetworkInformation.Ping
+    $global:PingTask = $null
 
     $win.Owner = $window
     $win.Left  = $window.Left + $window.ActualWidth + 10
@@ -1229,16 +1295,12 @@ function show_ping_window ($target, $tag) {
     $global:PingTimer.Interval = [TimeSpan]::FromSeconds(1)
     $global:PingTimer.Add_Tick({ ping_tick })
 
+    # Stop while a run is going, Re-Ping (5 more) once it's done
     $global:PingWin.Toggle.Add_Click({
         if ($global:PingTimer.IsEnabled) {
-            stop_ping
-            $global:PingWin.Toggle.Content = "Resume"
-            add_ping_line "Stopped"
+            finish_ping_run $true
         } else {
-            $global:PingTask = $null
-            $global:PingTimer.Start()
-            $global:PingWin.Toggle.Content = "Stop"
-            ping_tick
+            start_ping_run
         }
     })
     $global:PingWin.Close.Add_Click({ $global:PingWin.Window.Close() })
@@ -1252,8 +1314,7 @@ function show_ping_window ($target, $tag) {
 
     reset_ping_state $target $tag
     $win.Show()
-    $global:PingTimer.Start()
-    ping_tick
+    start_ping_run
 }
 
 function search_asset_tag {
