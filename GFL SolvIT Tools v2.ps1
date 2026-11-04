@@ -1114,6 +1114,11 @@ function set_ping_color ($hex) {
 }
 
 function reset_ping_state ($target, $tag) {
+    # A Ping object only allows one request at a time. If a ping for the previous tag is still
+    # in flight, reusing it throws "an asynchronous call is already in progress", so start fresh.
+    if ($global:PingTask -and -not $global:PingTask.IsCompleted) {
+        $global:PingObj = New-Object System.Net.NetworkInformation.Ping
+    }
     $global:PingTask  = $null
     $global:PingSent  = 0
     $global:PingOk    = 0
