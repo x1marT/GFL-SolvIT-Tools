@@ -81,7 +81,7 @@ $inputXML = @"
                     <Button Name="btnTier2" Height="40" Background="Transparent" Foreground="White" BorderThickness="0" HorizontalContentAlignment="Left" Padding="15,0,0,0">
                         <StackPanel Orientation="Horizontal">
                             <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE774;" FontSize="16" VerticalAlignment="Center" Margin="0,0,10,0"/>
-                            <TextBlock Text="Tier 2 Lookup" VerticalAlignment="Center"/>
+                            <TextBlock Text="Time Zones / Tier 2" VerticalAlignment="Center"/>
                         </StackPanel>
                     </Button>
 
@@ -897,7 +897,7 @@ $inputXML = @"
                     <RowDefinition Height="Auto"/> <RowDefinition Height="80"/>   <RowDefinition Height="*"/>    </Grid.RowDefinitions>
 
                 <StackPanel Grid.Row="0" Margin="25,15,0,15">
-                    <TextBlock Text="Tier 2 Lookup" FontSize="24" FontWeight="Bold" Foreground="#2D2D30" FontFamily="Segoe UI"/>
+                    <TextBlock Text="Time Zones / Tier 2" FontSize="24" FontWeight="Bold" Foreground="#2D2D30" FontFamily="Segoe UI"/>
                     <TextBlock Text="Find the Tier 2 team for a US state or CA province and compare local time with Portugal." FontSize="13" Foreground="#666"/>
                 </StackPanel>
 
@@ -974,7 +974,7 @@ $inputXML = @"
                                     <TextBlock Grid.Column="1" FontFamily="Segoe MDL2 Assets" Text="&#xE8AB;" FontSize="18" Foreground="#888" HorizontalAlignment="Center" VerticalAlignment="Bottom" Margin="0,0,0,10"/>
 
                                     <StackPanel Grid.Column="2">
-                                        <TextBlock Name="lblT2OriginClock" Text="Portugal Mainland Time" Foreground="#888" FontSize="11" Margin="0,0,0,3"/>
+                                        <TextBlock Name="lblT2OriginClock" Text="Porto Time" Foreground="#888" FontSize="11" Margin="0,0,0,3"/>
                                         <TextBox Name="txtT2OriginTime" Height="40" MaxLength="5" FontSize="22" FontFamily="Consolas" FontWeight="Bold" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" IsEnabled="False"/>
                                     </StackPanel>
                                 </Grid>
@@ -2548,7 +2548,7 @@ $listPrinterResults.Add_MouseDoubleClick({
 })
 
 
-### TIER 2 LOOKUP LOGIC ###
+### TIME ZONES TIER 2 LOGIC ###
 
 $global:T2Data = @{
     "Canada" = @{
@@ -2600,7 +2600,7 @@ function get_t2_reference {
     } catch {
         $tz = get_t2_timezone "Europe/Lisbon"
     }
-    return @{ TimeZone = $tz; Name = "Portugal Mainland" }
+    return @{ TimeZone = $tz; Name = "Porto" }
 }
 
 function get_t2_selection {
@@ -2700,7 +2700,7 @@ function clear_t2_screen {
     }
 }
 
-$null = $cbT2Origin.Items.Add("Portugal Mainland")
+$null = $cbT2Origin.Items.Add("Porto")
 $null = $cbT2Origin.Items.Add("Azores")
 $cbT2Origin.SelectedIndex = 0
 $global:T2Data.Keys | Sort-Object | ForEach-Object { $null = $cbT2Country.Items.Add($_) }
