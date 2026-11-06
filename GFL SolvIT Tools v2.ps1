@@ -228,15 +228,23 @@ $inputXML = @"
                         <Border.Effect><DropShadowEffect BlurRadius="15" Opacity="0.1" ShadowDepth="4"/></Border.Effect>
                         <Border Padding="25">
                             <StackPanel>
-                                <StackPanel Orientation="Horizontal" Margin="0,0,0,20">
-                                    <Border Width="50" Height="50" CornerRadius="25" Background="#007ACC" Margin="0,0,15,0">
-                                        <TextBlock Text="&#xE77B;" FontFamily="Segoe MDL2 Assets" Foreground="White" FontSize="24" HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                                    </Border>
-                                    <StackPanel VerticalAlignment="Center">
-                                        <TextBox Name="lblUserName" Text="User Name" IsReadOnly="True" FontSize="18" FontWeight="Bold" BorderThickness="0" Background="Transparent"/>
-                                        <TextBox Name="lblUserJobTitle" Text="Job Title" IsReadOnly="True" FontSize="13" Foreground="#666" BorderThickness="0" Background="Transparent"/>
+                                <Grid Margin="0,0,0,20">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+                                    <StackPanel Orientation="Horizontal">
+                                        <Border Width="50" Height="50" CornerRadius="25" Background="#007ACC" Margin="0,0,15,0">
+                                            <TextBlock Text="&#xE77B;" FontFamily="Segoe MDL2 Assets" Foreground="White" FontSize="24" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                        </Border>
+                                        <StackPanel VerticalAlignment="Center">
+                                            <TextBox Name="lblUserName" Text="User Name" IsReadOnly="True" FontSize="18" FontWeight="Bold" BorderThickness="0" Background="Transparent"/>
+                                            <TextBox Name="lblUserJobTitle" Text="Job Title" IsReadOnly="True" FontSize="13" Foreground="#666" BorderThickness="0" Background="Transparent"/>
+                                        </StackPanel>
                                     </StackPanel>
-                                </StackPanel>
+                                    <Button Grid.Column="1" Name="btnPopOutUser" Content="&#xE8A7;" FontFamily="Segoe MDL2 Assets" FontSize="14" Width="30" Height="30" VerticalAlignment="Top"
+                                            Background="Transparent" Foreground="#007ACC" BorderThickness="0" Cursor="Hand" ToolTip="Open this user in a separate window"/>
+                                </Grid>
                                 <Separator Background="#EEE" Margin="0,0,0,20"/>
                                 <Grid Name="gridUserInfo">
                                     <Grid.ColumnDefinitions><ColumnDefinition Width="Auto"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
@@ -1651,27 +1659,88 @@ function sort_users {
     }
 }
 
+$global:UserFetchWork = {
+    param($user, $dc)
+    $props = @("DisplayName", "Title", "EmailAddress", "Manager", "StreetAddress", "City", "State", "PostalCode", "Country",
+               "PasswordLastSet", "lastLogonTimestamp", "LastBadPasswordAttempt", "badPwdCount", "whenChanged",
+               "msExchRemoteRecipientType", "extensionAttribute2", "extensionAttribute3", "AccountExpirationDate",
+               "employeeID", "MobilePhone", "OfficePhone", "LockedOut")
+
+    $adUser = Get-ADUser -Identity $user -Server $dc -Properties $props -ErrorAction Stop |
+              Select-Object -Property (@("DistinguishedName", "SamAccountName", "Enabled") + $props)
+
+    $groups = @(Get-ADPrincipalGroupMembership -Identity $user -ErrorAction Stop | ForEach-Object { $_.DistinguishedName })
+
+    [pscustomobject]@{ User = $adUser; Groups = $groups }
+}
+
+function format_user ($adUser, $groups) {
+    $na = { param($v) if ($v) { "$v" } else { "N/A" } }
+    $when = { param($d) if ($d) { $d.ToString("MMM dd, yyyy HH:mm") } else { "Never" } }
+
+    $officePhone = & $na $adUser.OfficePhone
+    $mobilePhone = & $na $adUser.MobilePhone
+
+    $addressParts = @($adUser.StreetAddress, $adUser.City, $adUser.State, $adUser.PostalCode, $adUser.Country) |
+                    Where-Object { -not [string]::IsNullOrWhiteSpace($_) }
+
+    if ($groups -match "Disabled Users") {
+        $level = "Disabled";      $levelBrush = [System.Windows.Media.Brushes]::Red
+    } elseif ($groups -match "Low Risk") {
+        $level = "Low Risk User"; $levelBrush = [System.Windows.Media.Brushes]::Green
+    } elseif ($groups -match "Domain Users") {
+        $level = "Domain User";   $levelBrush = [System.Windows.Media.Brushes]::Blue
+    } else {
+        $level = "NOT DETECTED";  $levelBrush = [System.Windows.Media.Brushes]::Gray
+    }
+
+    if (-not $adUser.Enabled) {
+        $status = "DISABLED"; $statusBrush = [System.Windows.Media.Brushes]::Red
+    } elseif ($adUser.LockedOut) {
+        $status = "LOCKED";   $statusBrush = [System.Windows.Media.Brushes]::Crimson
+    } else {
+        $status = "UNLOCKED"; $statusBrush = [System.Windows.Media.Brushes]::LimeGreen
+    }
+
+    $lastActiveDay = if ($adUser.AccountExpirationDate) { $adUser.AccountExpirationDate.AddDays(-1) } else { $null }
+
+    [pscustomobject]@{
+        Name          = $adUser.DisplayName
+        Title         = $adUser.Title
+        Sam           = $adUser.SamAccountName
+        EmployeeID    = & $na $adUser.employeeID
+        Email         = & $na $adUser.EmailAddress
+        Manager       = if ($adUser.Manager) { ($adUser.Manager -split ",")[0].Replace("CN=","") } else { "N/A" }
+        Phone         = "$officePhone / $mobilePhone"
+        Address       = if ($addressParts) { $addressParts -join ", " } else { "N/A" }
+        Level         = $level
+        LevelBrush    = $levelBrush
+        Status        = $status
+        StatusBrush   = $statusBrush
+        ExtAttr2      = & $na $adUser.extensionAttribute2
+        ExtAttr3      = & $na $adUser.extensionAttribute3
+        Exch          = & $na $adUser.msExchRemoteRecipientType
+        PwdLastSet    = & $when $adUser.PasswordLastSet
+        LastLogin     = if ($adUser.LastLogonTimestamp) { [DateTime]::FromFileTime($adUser.LastLogonTimestamp).ToString("MMM dd, yyyy HH:mm") } else { "Never" }
+        LastBadLogin  = & $when $adUser.LastBadPasswordAttempt
+        Modified      = & $when $adUser.whenChanged
+        BadPwdCount   = "$($adUser.BadPwdCount)"
+        LastActiveDay = $lastActiveDay
+        Expiration    = if ($lastActiveDay) { $lastActiveDay.ToString("MMMM dd, yyyy") } else { "Never" }
+    }
+}
+
+$global:CurrentUserData = $null
+
 function load_user ($user) {
     $global:currentLoadedUser = $null
+    $global:CurrentUserData = $null
     $lblUserError.Visibility = "Collapsed"
     $multipleResultsArea.Visibility = "Collapsed"
 
     set_busy $btnsearchUser $true "Loading..."
 
-    start_bg "loaduser" {
-        param($user, $dc)
-        $props = @("DisplayName", "Title", "EmailAddress", "Manager", "StreetAddress", "City", "State", "PostalCode", "Country",
-                   "PasswordLastSet", "lastLogonTimestamp", "LastBadPasswordAttempt", "badPwdCount", "whenChanged",
-                   "msExchRemoteRecipientType", "extensionAttribute2", "extensionAttribute3", "AccountExpirationDate",
-                   "employeeID", "MobilePhone", "OfficePhone", "LockedOut")
-
-        $adUser = Get-ADUser -Identity $user -Server $dc -Properties $props -ErrorAction Stop |
-                  Select-Object -Property (@("DistinguishedName", "SamAccountName", "Enabled") + $props)
-
-        $groups = @(Get-ADPrincipalGroupMembership -Identity $user -ErrorAction Stop | ForEach-Object { $_.DistinguishedName })
-
-        [pscustomobject]@{ User = $adUser; Groups = $groups }
-    } @($user, $global:CurrentDC) {
+    start_bg "loaduser" $global:UserFetchWork @($user, $global:CurrentDC) {
         param($r, $s)
         set_busy $btnsearchUser $false
 
@@ -1684,83 +1753,260 @@ function load_user ($user) {
         }
 
         $adUser = $r.Data.User
-        $groups = @($r.Data.Groups)
+        $f = format_user $adUser @($r.Data.Groups)
 
         $global:currentLoadedUser = $adUser.DistinguishedName
+        $global:CurrentUserData = $r.Data
 
-        $officePhone = if ($adUser.OfficePhone) { $adUser.OfficePhone } else { "N/A" }
-        $mobilePhone = if ($adUser.MobilePhone) { $adUser.MobilePhone } else { "N/A" }
-            
-        $lblUserName.Text     = $adUser.DisplayName
-        $lblUserJobTitle.Text = $adUser.Title
-        $lblEmployeeID.Text   = if ($adUser.employeeID) { $adUser.employeeID } else { "N/A" }
-        $lblUserSam.Text      = $adUser.SamAccountName
-        $lblUserEmail.Text    = if ($adUser.EmailAddress) { $adUser.EmailAddress } else { "N/A" }
-        $lblUserManager.Text  = if ($adUser.Manager) {($adUser.Manager -split ",")[0].Replace("CN=","")} else { "N/A" }
-        $lblUserPhone.Text    = "$($officePhone) / $($mobilePhone)"
+        $lblUserName.Text     = $f.Name
+        $lblUserJobTitle.Text = $f.Title
+        $lblEmployeeID.Text   = $f.EmployeeID
+        $lblUserSam.Text      = $f.Sam
+        $lblUserEmail.Text    = $f.Email
+        $lblUserManager.Text  = $f.Manager
+        $lblUserPhone.Text    = $f.Phone
+        $lblUserAddress.Text  = $f.Address
 
-        $addressParts = @($adUser.StreetAddress, $adUser.City, $adUser.State, $adUser.PostalCode, $adUser.Country) |
-                        Where-Object { -not [string]::IsNullOrWhiteSpace($_) }
-        $lblUserAddress.Text  = if ($addressParts) { $addressParts -join ", " } else { "N/A" }
+        $lblUserLevel.Text       = $f.Level
+        $lblUserLevel.Foreground = $f.LevelBrush
 
-        if ($groups -match "Disabled Users") {
-            $lblUserLevel.Text = "Disabled"
-            $lblUserLevel.Foreground = [System.Windows.Media.Brushes]::Red
+        $lblExtAttr2.Text = $f.ExtAttr2
+        $lblExtAttr3.Text = $f.ExtAttr3
+        $lblUserExch.Text = $f.Exch
 
-        } elseif ($groups -match "Low Risk") {
-            $lblUserLevel.Text = "Low Risk User"
-            $lblUserLevel.Foreground = [System.Windows.Media.Brushes]::Green
+        $lblPwdLastSet.Text       = $f.PwdLastSet
+        $lblLastLogin.Text        = $f.LastLogin
+        $lblLastBadLogin.Text     = $f.LastBadLogin
+        $lblModified.Text         = $f.Modified
+        $lblBadPasswordCount.Text = $f.BadPwdCount
 
-        } elseif ($groups -match "Domain Users") {
-            $lblUserLevel.Text = "Domain User"
-            $lblUserLevel.Foreground = [System.Windows.Media.Brushes]::Blue
+        $lblUserStatus.Text       = $f.Status
+        $brdUserStatus.Background = $f.StatusBrush
+        $actionsVisibility = if ($adUser.Enabled) { "Visible" } else { "Collapsed" }
+        $btnUnlockAccount.Visibility = $actionsVisibility
+        $btnResetPassword.Visibility = $actionsVisibility
 
-        } else {
-            $lblUserLevel.Foreground = [System.Windows.Media.Brushes]::Gray
-            $lblUserLevel.Text = "NOT DETECTED"
-        }
-
-        $lblExtAttr2.Text = if ($adUser.extensionAttribute2) { $adUser.extensionAttribute2 } else { "N/A" }
-        $lblExtAttr3.Text = if ($adUser.extensionAttribute3) { $adUser.extensionAttribute3 } else { "N/A" }
-        $lblUserExch.Text = if ($adUser.msExchRemoteRecipientType) { $adUser.msExchRemoteRecipientType } else { "N/A" }
-
-        $lblPwdLastSet.Text       = if ($adUser.PasswordLastSet) { $adUser.PasswordLastSet.ToString("MMM dd, yyyy HH:mm") } else { "Never" }
-        $lblLastLogin.Text        = if ($adUser.LastLogonTimestamp) { [DateTime]::FromFileTime($adUser.LastLogonTimestamp).ToString("MMM dd, yyyy HH:mm") } else { "Never" }
-        $lblLastBadLogin.Text     = if ($adUser.LastBadPasswordAttempt) { $adUser.LastBadPasswordAttempt.ToString("MMM dd, yyyy HH:mm") } else { "Never" }
-        $lblModified.Text         = if ($adUser.whenChanged) { $adUser.whenChanged.ToString("MMM dd, yyyy HH:mm") } else { "Never" }
-        $lblBadPasswordCount.Text = $adUser.BadPwdCount
-        
-        if (-not $adUser.Enabled) {
-            $lblUserStatus.Text = "DISABLED"
-            $brdUserStatus.Background = [System.Windows.Media.Brushes]::Red
-            $btnUnlockAccount.Visibility = "Collapsed"
-            $btnResetPassword.Visibility = "Collapsed"
-
-        } else {
-            if ($adUser.LockedOut) {
-                $lblUserStatus.Text = "LOCKED"
-                $brdUserStatus.Background = [System.Windows.Media.Brushes]::Crimson
-            } else {
-                $lblUserStatus.Text = "UNLOCKED"
-                $brdUserStatus.Background = [System.Windows.Media.Brushes]::LimeGreen
-            }
-            $btnUnlockAccount.Visibility = "Visible"
-            $btnResetPassword.Visibility = "Visible"
-        }
-
-        if ($adUser.AccountExpirationDate) {
-            $lastActiveDay = $adUser.AccountExpirationDate.AddDays(-1)
-            $dpAccountExpiration.SelectedDate = $lastActiveDay
-            $lblExpirationText.Text = $lastActiveDay.ToString("MMMM dd, yyyy")
-        } else {
-            $dpAccountExpiration.SelectedDate = $null
-            $lblExpirationText.Text = "Never"
-        }
+        $dpAccountExpiration.SelectedDate = $f.LastActiveDay
+        $lblExpirationText.Text = $f.Expiration
 
         $userSubNavbar.Visibility = "Visible"
         select_user_tab "info"
     } @{ User = $user }
 }
+
+### USER POP-OUT WINDOW LOGIC ###
+
+$global:UserPopups = New-Object System.Collections.ArrayList
+
+$global:UserPopupXaml = @'
+<Window xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="User Info" Width="420" Height="640" MinWidth="360" MinHeight="400"
+        Background="#F3F3F3" FontFamily="Segoe UI" WindowStartupLocation="Manual"
+        UseLayoutRounding="True" TextOptions.TextFormattingMode="Display">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <Border Grid.Row="0" Background="White" BorderBrush="#E5E5E5" BorderThickness="0,0,0,1" Padding="15,12">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                <Border Grid.Column="0" Width="40" Height="40" CornerRadius="20" Background="#007ACC" Margin="0,0,12,0" VerticalAlignment="Center">
+                    <TextBlock Text="&#xE77B;" FontFamily="Segoe MDL2 Assets" Foreground="White" FontSize="18" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                </Border>
+                <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                    <TextBox Name="popName" Text="-" IsReadOnly="True" FontSize="16" FontWeight="Bold" BorderThickness="0" Background="Transparent" TextWrapping="Wrap"/>
+                    <TextBox Name="popTitle" Text="" IsReadOnly="True" FontSize="12" Foreground="#666" BorderThickness="0" Background="Transparent" TextWrapping="Wrap"/>
+                </StackPanel>
+                <Border Grid.Column="2" Name="popStatusBox" Padding="8,2" CornerRadius="4" Background="#888888" VerticalAlignment="Center" Margin="10,0,0,0">
+                    <TextBlock Name="popStatus" Text="-" FontSize="11" FontWeight="Bold"/>
+                </Border>
+            </Grid>
+        </Border>
+
+        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+            <StackPanel Margin="15">
+                <TextBlock Name="popError" Foreground="#D13438" FontWeight="SemiBold" TextWrapping="Wrap" Margin="0,0,0,10" Visibility="Collapsed"/>
+
+                <Border Background="White" CornerRadius="8" BorderBrush="#E5E5E5" BorderThickness="1" Padding="15" Margin="0,0,0,12">
+                    <StackPanel>
+                        <TextBlock Text="Details" FontWeight="Bold" Margin="0,0,0,8"/>
+                        <StackPanel Name="popDetails"/>
+                    </StackPanel>
+                </Border>
+
+                <Border Background="White" CornerRadius="8" BorderBrush="#E5E5E5" BorderThickness="1" Padding="15" Margin="0,0,0,12">
+                    <StackPanel>
+                        <TextBlock Text="Account Activity" FontWeight="Bold" Margin="0,0,0,8"/>
+                        <StackPanel Name="popActivity"/>
+                    </StackPanel>
+                </Border>
+
+                <Border Background="White" CornerRadius="8" BorderBrush="#E5E5E5" BorderThickness="1" Padding="15">
+                    <StackPanel>
+                        <TextBlock Name="popGroupsHeader" Text="Groups" FontWeight="Bold" Margin="0,0,0,8"/>
+                        <ListBox Name="popGroups" Height="170" BorderBrush="#E5E5E5" FontSize="11"/>
+                    </StackPanel>
+                </Border>
+            </StackPanel>
+        </ScrollViewer>
+
+        <Border Grid.Row="2" Background="White" BorderBrush="#E5E5E5" BorderThickness="0,1,0,0" Padding="15,8">
+            <Grid>
+                <TextBlock Name="popUpdated" Text="" FontSize="10" Foreground="#888" VerticalAlignment="Center"/>
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                    <Button Name="popRefresh" Content="Refresh" Width="90" Height="26" Margin="0,0,8,0" Background="#007ACC" Foreground="White" BorderThickness="0"/>
+                    <Button Name="popClose" Content="Close" Width="80" Height="26" Background="#F1F1F1" BorderThickness="0"/>
+                </StackPanel>
+            </Grid>
+        </Border>
+    </Grid>
+</Window>
+'@
+
+function add_popup_row ($panel, $label, $value, $brush) {
+    $row = New-Object System.Windows.Controls.Grid
+    $row.Margin = "0,0,0,6"
+    $c1 = New-Object System.Windows.Controls.ColumnDefinition; $c1.Width = New-Object System.Windows.GridLength(120)
+    $c2 = New-Object System.Windows.Controls.ColumnDefinition
+    $row.ColumnDefinitions.Add($c1); $row.ColumnDefinitions.Add($c2)
+
+    $lbl = New-Object System.Windows.Controls.TextBlock -Property @{ Text = $label; Foreground = "#888"; FontSize = 11; VerticalAlignment = "Top" }
+
+    $val = New-Object System.Windows.Controls.TextBox -Property @{
+        Text = "$value"; IsReadOnly = $true; BorderThickness = "0"; Background = "Transparent"
+        FontWeight = "SemiBold"; FontSize = 11; TextWrapping = "Wrap"
+    }
+    if ($brush) { $val.Foreground = $brush }
+    [System.Windows.Controls.Grid]::SetColumn($val, 1)
+
+    $null = $row.Children.Add($lbl)
+    $null = $row.Children.Add($val)
+    $null = $panel.Children.Add($row)
+}
+
+function fill_user_popup ($ui, $data) {
+    $f = format_user $data.User @($data.Groups)
+    $ui.UserDN = $data.User.DistinguishedName
+
+    $ui.Window.Title         = "$($f.Name) - User Info"
+    $ui.Name.Text            = $f.Name
+    $ui.Title.Text           = $f.Title
+    $ui.Status.Text          = $f.Status
+    $ui.StatusBox.Background = $f.StatusBrush
+    $ui.Error.Visibility     = "Collapsed"
+
+    $ui.Details.Children.Clear()
+    add_popup_row $ui.Details "Username"         $f.Sam
+    add_popup_row $ui.Details "Employee ID"      $f.EmployeeID
+    add_popup_row $ui.Details "User Level"       $f.Level $f.LevelBrush
+    add_popup_row $ui.Details "Email"            $f.Email
+    add_popup_row $ui.Details "Manager"          $f.Manager
+    add_popup_row $ui.Details "Phone/Mobile"     $f.Phone
+    add_popup_row $ui.Details "Address"          $f.Address
+    add_popup_row $ui.Details "Expiration Date"  $f.Expiration
+    add_popup_row $ui.Details "Exch Remote Type" $f.Exch
+    add_popup_row $ui.Details "Extension Attr 2" $f.ExtAttr2
+    add_popup_row $ui.Details "Extension Attr 3" $f.ExtAttr3
+
+    $ui.Activity.Children.Clear()
+    add_popup_row $ui.Activity "Password Last Set"  $f.PwdLastSet
+    add_popup_row $ui.Activity "Last Login"         $f.LastLogin
+    add_popup_row $ui.Activity "Last Bad Login"     $f.LastBadLogin
+    add_popup_row $ui.Activity "Last Modified"      $f.Modified
+    add_popup_row $ui.Activity "Bad Password Count" $f.BadPwdCount
+
+    $ui.Groups.Items.Clear()
+    $names = @($data.Groups | Where-Object { $_ } | ForEach-Object { group_name_from_dn $_ } | Where-Object { $_ } | Sort-Object)
+    foreach ($n in $names) { $null = $ui.Groups.Items.Add($n) }
+    $ui.GroupsHeader.Text = "Groups ($($names.Count))"
+
+    $ui.Updated.Text = "Loaded at $((Get-Date).ToString('HH:mm:ss'))  -  read-only"
+}
+
+function refresh_user_popup ($ui) {
+    if (-not $ui.UserDN) { return }
+
+    $ui.Refresh.IsEnabled = $false
+    $ui.Refresh.Content   = "Refreshing..."
+
+    start_bg "popup-$($ui.Id)" $global:UserFetchWork @($ui.UserDN, $global:CurrentDC) {
+        param($r, $s)
+        $ui = $s.UI
+        if ($ui.IsClosed) { return }
+
+        $ui.Refresh.IsEnabled = $true
+        $ui.Refresh.Content   = "Refresh"
+
+        if ($r.Ok) {
+            fill_user_popup $ui $r.Data
+        } else {
+            $ui.Error.Text       = "Could not refresh: $($r.Error)"
+            $ui.Error.Visibility = "Visible"
+        }
+    } @{ UI = $ui }
+}
+
+function open_user_popup ($data) {
+    $reader = New-Object System.Xml.XmlNodeReader ([xml]$global:UserPopupXaml)
+    $win = [Windows.Markup.XamlReader]::Load($reader)
+
+    $ui = @{
+        Id           = [guid]::NewGuid().ToString("N")
+        Window       = $win
+        IsClosed     = $false
+        UserDN       = $null
+        Name         = $win.FindName("popName")
+        Title        = $win.FindName("popTitle")
+        StatusBox    = $win.FindName("popStatusBox")
+        Status       = $win.FindName("popStatus")
+        Error        = $win.FindName("popError")
+        Details      = $win.FindName("popDetails")
+        Activity     = $win.FindName("popActivity")
+        GroupsHeader = $win.FindName("popGroupsHeader")
+        Groups       = $win.FindName("popGroups")
+        Updated      = $win.FindName("popUpdated")
+        Refresh      = $win.FindName("popRefresh")
+        Close        = $win.FindName("popClose")
+    }
+
+    $win.Tag = $ui
+    $ui.Refresh.Tag = $ui
+    $ui.Close.Tag = $ui
+    $ui.Refresh.Add_Click({ refresh_user_popup $this.Tag })
+    $ui.Close.Add_Click({ $this.Tag.Window.Close() })
+    $win.Add_Closed({
+        $this.Tag.IsClosed = $true
+        $global:UserPopups.Remove($this.Tag)
+    })
+
+    fill_user_popup $ui $data
+
+    $offset = 30 * ($global:UserPopups.Count % 8)
+    $screenRight = [System.Windows.SystemParameters]::VirtualScreenLeft + [System.Windows.SystemParameters]::VirtualScreenWidth
+    $left = $window.Left + $window.ActualWidth + 10 + $offset
+    if ($left + $win.Width -gt $screenRight) { $left = $window.Left + 60 + $offset }
+    $win.Left = $left
+    $win.Top  = $window.Top + $offset
+
+    $null = $global:UserPopups.Add($ui)
+    $win.Show()
+}
+
+$btnPopOutUser.Add_Click({
+    if ($global:CurrentUserData) { open_user_popup $global:CurrentUserData }
+})
+
+$window.Add_Closed({
+    foreach ($p in @($global:UserPopups)) { $p.Window.Close() }
+})
 
 function get_user_groups {
     if (-not $global:currentLoadedUser) { return }
