@@ -1391,6 +1391,11 @@ function show_ping_panel ($target, $tag) {
     start_ping_run
 }
 
+function hide_ping_panel {
+    stop_ping
+    $global:PingUI.Panel.Visibility = "Collapsed"
+}
+
 $pingToggle.Add_Click({
     if ($global:PingTimer.IsEnabled) {
         finish_ping_run $true
@@ -1399,10 +1404,7 @@ $pingToggle.Add_Click({
     }
 })
 
-$pingClose.Add_Click({
-    stop_ping
-    $pingPanel.Visibility = "Collapsed"
-})
+$pingClose.Add_Click({ hide_ping_panel })
 
 $window.Add_Closed({
     stop_ping
@@ -1464,6 +1466,7 @@ function search_asset_tag {
         set_busy $btnsearchLaps $false
         $tag = $s.Tag
         $pingTarget = $tag
+        $tagExists = $false
 
         if (-not $r.Ok) {
             log_error "LAPS" $tag $r.Error
@@ -1471,6 +1474,7 @@ function search_asset_tag {
         } else {
             $d = $r.Data
             if ($d.DNS) { $pingTarget = $d.DNS }
+            $tagExists = [bool]($d.Password -or $d.DNS -or -not $d.ComputerError)
 
             if ($d.Password) {
                 $lblAssetTitle.Text = $tag
@@ -1491,7 +1495,11 @@ function search_asset_tag {
             }
         }
 
-        show_ping_panel $pingTarget $tag
+        if ($tagExists) {
+            show_ping_panel $pingTarget $tag
+        } else {
+            hide_ping_panel
+        }
     } @{ Tag = $tag }
 }
 
