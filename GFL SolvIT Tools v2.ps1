@@ -2016,7 +2016,8 @@ function get_user_groups {
 
     start_bg "groups" {
         param($userDN, $dc)
-        @((Get-ADUser -Identity $userDN -Properties memberOf -Server $dc -ErrorAction Stop).memberOf)
+        $u = Get-ADUser -Identity $userDN -Properties memberOf, PrimaryGroup -Server $dc -ErrorAction Stop
+        [pscustomobject]@{ MemberOf = @($u.memberOf); PrimaryGroup = $u.PrimaryGroup }
     } @($global:currentLoadedUser, $global:CurrentDC) {
         param($r, $s)
         if ($s.UserDN -ne $global:currentLoadedUser) { return }
@@ -2028,7 +2029,13 @@ function get_user_groups {
         }
 
         $listUserGroups.Items.Clear()
-        $rows = foreach ($dn in @($r.Data | Where-Object { $_ })) { [PSCustomObject]@{ GroupName = (group_name_from_dn $dn); DN = $dn } }
+        $primaryDN = $r.Data.PrimaryGroup
+        $dns = @($r.Data.MemberOf | Where-Object { $_ })
+        if ($primaryDN -and $dns -notcontains $primaryDN) { $dns += $primaryDN }
+
+        $rows = foreach ($dn in $dns) {
+            [PSCustomObject]@{ GroupName = (group_name_from_dn $dn); DN = $dn; IsPrimary = ($dn -eq $primaryDN) }
+        }
         $rows | Sort-Object GroupName | ForEach-Object { $listUserGroups.Items.Add($_) | Out-Null }
 
         $lblGroupCount.Text = "Total Groups: $($listUserGroups.Items.Count)"
@@ -2054,7 +2061,8 @@ function add_user_to_group {
     try {
         $adGroup = Get-ADGroup -Identity $groupName -Server $global:CurrentDC -ErrorAction Stop
 
-        $memberOfDNs = @((Get-ADUser -Identity $global:currentLoadedUser -Properties memberOf -Server $global:CurrentDC -ErrorAction Stop).memberOf)
+        $u = Get-ADUser -Identity $global:currentLoadedUser -Properties memberOf, PrimaryGroup -Server $global:CurrentDC -ErrorAction Stop
+        $memberOfDNs = @($u.memberOf) + @($u.PrimaryGroup)
 
         if ($memberOfDNs -contains $adGroup.DistinguishedName) {
             $lblGroupActionError.Text = "User is already a member of '$($adGroup.Name)'."
@@ -2093,6 +2101,12 @@ function remove_user_from_group {
     }
 
     $groupName = $selected.GroupName
+
+    if ($selected.IsPrimary) {
+        $lblGroupActionError.Text = "'$groupName' is the user's primary group, so it can't be removed."
+        $lblGroupActionError.Visibility = "Visible"
+        return
+    }
 
     $confirm = [System.Windows.MessageBox]::Show("Remove $($lblUserName.Text) from '$groupName'?", "Confirm Removal", "YesNo", "Warning")
 
