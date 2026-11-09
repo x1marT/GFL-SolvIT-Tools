@@ -18,7 +18,7 @@ if ([System.Threading.Thread]::CurrentThread.ApartmentState -ne [System.Threadin
 Add-Type -AssemblyName PresentationFramework, PresentationCore, WindowsBase
 Add-Type -AssemblyName Microsoft.VisualBasic
 
-$script:AppVersionDate = "05/11/2026"
+$script:AppVersionDate = "09/11/2026"
 
 $inputXML = @"
 <Window xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
