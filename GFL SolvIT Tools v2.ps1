@@ -1,10 +1,8 @@
 trap {
     $errText = "GFL SolvIT Tools could not start.`n`n$($_.Exception.Message)`n`nLine $($_.InvocationInfo.ScriptLineNumber): $("$($_.InvocationInfo.Line)".Trim())"
-    $logPath = Join-Path $env:TEMP "GFLSolvITTools_error.log"
-    try { "[$(Get-Date)] $errText" | Out-File -FilePath $logPath -Append -Encoding UTF8 } catch { }
     try {
         Add-Type -AssemblyName PresentationFramework -ErrorAction Stop
-        [System.Windows.MessageBox]::Show("$errText`n`nA copy was saved to:`n$logPath", "GFL SolvIT Tools", "OK", "Error") | Out-Null
+        [System.Windows.MessageBox]::Show($errText, "GFL SolvIT Tools", "OK", "Error") | Out-Null
     } catch {
         Write-Host $errText -ForegroundColor Red
         Read-Host "Press Enter to close"
