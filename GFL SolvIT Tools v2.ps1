@@ -1,10 +1,8 @@
 trap {
     $errText = "GFL SolvIT Tools could not start.`n`n$($_.Exception.Message)`n`nLine $($_.InvocationInfo.ScriptLineNumber): $("$($_.InvocationInfo.Line)".Trim())"
-    $logPath = Join-Path $env:TEMP "GFLSolvITTools_error.log"
-    try { "[$(Get-Date)] $errText" | Out-File -FilePath $logPath -Append -Encoding UTF8 } catch { }
     try {
         Add-Type -AssemblyName PresentationFramework -ErrorAction Stop
-        [System.Windows.MessageBox]::Show("$errText`n`nA copy was saved to:`n$logPath", "GFL SolvIT Tools", "OK", "Error") | Out-Null
+        [System.Windows.MessageBox]::Show($errText, "GFL SolvIT Tools", "OK", "Error") | Out-Null
     } catch {
         Write-Host $errText -ForegroundColor Red
         Read-Host "Press Enter to close"
@@ -20,7 +18,7 @@ if ([System.Threading.Thread]::CurrentThread.ApartmentState -ne [System.Threadin
 Add-Type -AssemblyName PresentationFramework, PresentationCore, WindowsBase
 Add-Type -AssemblyName Microsoft.VisualBasic
 
-$script:AppVersionDate = "05/11/2026"
+$script:AppVersionDate = "09/11/2026"
 
 $inputXML = @"
 <Window xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
@@ -367,6 +365,20 @@ $inputXML = @"
                                     </Button>
                                 </StackPanel>
                                 <TextBlock Name="lblGroupActionError" Text="Error" TextWrapping="Wrap" Foreground="#D13438" FontSize="12" FontWeight="SemiBold" Margin="0,0,0,10" Visibility="Collapsed"/>
+                                <Border Name="groupMatchesPanel" Visibility="Collapsed" BorderBrush="#E5E5E5" BorderThickness="1" CornerRadius="6" Padding="10">
+                                    <StackPanel>
+                                        <TextBlock Name="lblGroupMatches" Text="" FontWeight="SemiBold" Foreground="#333" TextWrapping="Wrap" Margin="0,0,0,8"/>
+                                        <ListBox Name="listGroupMatches" Height="200" BorderBrush="#E5E5E5" DisplayMemberPath="Label"/>
+                                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,8,0,0">
+                                            <Button Name="btnAddMatchedGroup" Content="Add Selected Group" Width="150" Height="30" Margin="0,0,8,0" Background="#28a745" Foreground="White">
+                                                <Button.Resources><Style TargetType="Border"><Setter Property="CornerRadius" Value="5"/></Style></Button.Resources>
+                                            </Button>
+                                            <Button Name="btnCancelGroupMatches" Content="Cancel" Width="80" Height="30" Background="#F1F1F1">
+                                                <Button.Resources><Style TargetType="Border"><Setter Property="CornerRadius" Value="5"/></Style></Button.Resources>
+                                            </Button>
+                                        </StackPanel>
+                                    </StackPanel>
+                                </Border>
                                 <ListView Name="listUserGroups" Height="270" BorderBrush="#E5E5E5">
                                     <ListView.View>
                                         <GridView>
@@ -2011,6 +2023,7 @@ $window.Add_Closed({
 function get_user_groups {
     if (-not $global:currentLoadedUser) { return }
 
+    hide_group_matches
     $listUserGroups.Items.Clear()
     $lblGroupCount.Text = "Loading groups..."
 
@@ -2042,6 +2055,54 @@ function get_user_groups {
     } @{ UserDN = $global:currentLoadedUser }
 }
 
+function show_group_action_error ($text) {
+    $lblGroupActionError.Text = $text
+    $lblGroupActionError.Visibility = "Visible"
+}
+
+function hide_group_matches {
+    $groupMatchesPanel.Visibility = "Collapsed"
+    $listGroupMatches.Items.Clear()
+    $listUserGroups.Visibility = "Visible"
+    $lblGroupCount.Visibility = "Visible"
+}
+
+function show_group_matches ($header, $groupList) {
+    $listGroupMatches.Items.Clear()
+    foreach ($m in $groupList) { $null = $listGroupMatches.Items.Add($m) }
+    $lblGroupMatches.Text = $header
+
+    $listUserGroups.Visibility = "Collapsed"
+    $lblGroupCount.Visibility = "Collapsed"
+    $groupMatchesPanel.Visibility = "Visible"
+}
+
+function add_group_by_dn ($groupDN, $groupName) {
+    if (-not $global:currentLoadedUser) { return }
+    $lblGroupActionError.Visibility = "Collapsed"
+
+    try {
+        $u = Get-ADUser -Identity $global:currentLoadedUser -Properties memberOf, PrimaryGroup -Server $global:CurrentDC -ErrorAction Stop
+        $memberOfDNs = @($u.memberOf) + @($u.PrimaryGroup)
+
+        if ($memberOfDNs -contains $groupDN) {
+            show_group_action_error "User is already a member of '$groupName'."
+            return
+        }
+
+        Add-ADGroupMember -Identity $groupDN -Members $global:currentLoadedUser -Credential $global:MyCred -Server $global:CurrentDC -ErrorAction Stop
+
+        $txtAddGroupName.Text = "Enter group name to add..."
+        $txtAddGroupName.Foreground = [System.Windows.Media.Brushes]::Gray
+
+        get_user_groups
+        get_apps
+
+    } catch {
+        show_group_action_error "Could not add to group: $($_.Exception.Message)"
+    }
+}
+
 function add_user_to_group {
     if (-not $global:currentLoadedUser) {
         [System.Windows.MessageBox]::Show("Please load a user first.")
@@ -2053,35 +2114,85 @@ function add_user_to_group {
     $groupName = $txtAddGroupName.Text.Trim()
 
     if ([string]::IsNullOrWhiteSpace($groupName) -or $groupName -eq "Enter group name to add...") {
-        $lblGroupActionError.Text = "Please enter a group name."
-        $lblGroupActionError.Visibility = "Visible"
+        show_group_action_error "Please enter a group name."
         return
     }
 
-    try {
-        $adGroup = Get-ADGroup -Identity $groupName -Server $global:CurrentDC -ErrorAction Stop
+    set_busy $btnAddUserGroup $true
 
-        $u = Get-ADUser -Identity $global:currentLoadedUser -Properties memberOf, PrimaryGroup -Server $global:CurrentDC -ErrorAction Stop
-        $memberOfDNs = @($u.memberOf) + @($u.PrimaryGroup)
+    start_bg "groupsearch" {
+        param($text, $userDN, $dc)
+        $limit = 500
 
-        if ($memberOfDNs -contains $adGroup.DistinguishedName) {
-            $lblGroupActionError.Text = "User is already a member of '$($adGroup.Name)'."
-            $lblGroupActionError.Visibility = "Visible"
+        $exact = $null
+        try { $exact = Get-ADGroup -Identity $text -Server $dc -ErrorAction Stop } catch { }
+        if ($exact) {
+            return [pscustomobject]@{ ExactDN = $exact.DistinguishedName; ExactName = $exact.Name; Mode = $null; Matches = @(); More = $false }
+        }
+
+        $safe = $text -replace "'", "''"
+        $mode = "start with"
+        $found = @(Get-ADGroup -Filter "Name -like '$safe*'" -Server $dc -ResultSetSize ($limit + 1) -ErrorAction Stop)
+        if ($found.Count -eq 0) {
+            $mode = "contain"
+            $found = @(Get-ADGroup -Filter "Name -like '*$safe*'" -Server $dc -ResultSetSize ($limit + 1) -ErrorAction Stop)
+        }
+
+        $u = Get-ADUser -Identity $userDN -Properties memberOf, PrimaryGroup -Server $dc -ErrorAction Stop
+        $current = @($u.memberOf) + @($u.PrimaryGroup)
+
+        $groupList = @($found | Select-Object -First $limit | Sort-Object Name | ForEach-Object {
+            $isMember = $current -contains $_.DistinguishedName
+            [pscustomobject]@{
+                Name     = $_.Name
+                DN       = $_.DistinguishedName
+                IsMember = $isMember
+                Label    = if ($isMember) { "$($_.Name)   (already a member)" } else { $_.Name }
+            }
+        })
+
+        [pscustomobject]@{ ExactDN = $null; ExactName = $null; Mode = $mode; Matches = $groupList; More = ($found.Count -gt $limit) }
+    } @($groupName, $global:currentLoadedUser, $global:CurrentDC) {
+        param($r, $s)
+        set_busy $btnAddUserGroup $false
+        if ($s.UserDN -ne $global:currentLoadedUser) { return }
+
+        if (-not $r.Ok) {
+            show_group_action_error "Could not search for groups: $($r.Error)"
             return
         }
 
-        Add-ADGroupMember -Identity $adGroup -Members $global:currentLoadedUser -Credential $global:MyCred -Server $global:CurrentDC -ErrorAction Stop
+        $d = $r.Data
+        if ($d.ExactDN) {
+            hide_group_matches
+            add_group_by_dn $d.ExactDN $d.ExactName
+            return
+        }
 
-        $txtAddGroupName.Text = "Enter group name to add..."
-        $txtAddGroupName.Foreground = [System.Windows.Media.Brushes]::Gray
+        $groupList = @($d.Matches | Where-Object { $null -ne $_ })
+        if ($groupList.Count -eq 0) {
+            hide_group_matches
+            show_group_action_error "No groups found matching '$($s.Text)'."
+            return
+        }
 
-        get_user_groups
-        get_apps
+        $header = "$($groupList.Count) group(s) $($d.Mode) '$($s.Text)'. Double-click one, or select it and click Add Selected Group:"
+        if ($d.More) { $header = "Showing the first $($groupList.Count) groups that $($d.Mode) '$($s.Text)'. Type more of the name to narrow it down:" }
+        show_group_matches $header $groupList
+    } @{ Text = $groupName; UserDN = $global:currentLoadedUser }
+}
 
-    } catch {
-        $lblGroupActionError.Text = "Could not add to group: $($_.Exception.Message)"
-        $lblGroupActionError.Visibility = "Visible"
+function add_selected_match {
+    $m = $listGroupMatches.SelectedItem
+    if ($null -eq $m) {
+        show_group_action_error "Select a group from the list to add."
+        return
     }
+    if ($m.IsMember) {
+        show_group_action_error "User is already a member of '$($m.Name)'."
+        return
+    }
+    add_group_by_dn $m.DN $m.Name
 }
 
 function remove_user_from_group {
@@ -2129,6 +2240,12 @@ $txtAddGroupName.Add_LostFocus({ if ([string]::IsNullOrWhiteSpace($txtAddGroupNa
 $txtAddGroupName.Add_KeyDown({ if ($_.Key -eq "Enter") { $_.Handled = $true; add_user_to_group } })
 
 $btnAddUserGroup.Add_Click({ add_user_to_group })
+$btnAddMatchedGroup.Add_Click({ add_selected_match })
+$listGroupMatches.Add_MouseDoubleClick({ if ($listGroupMatches.SelectedItem) { add_selected_match } })
+$btnCancelGroupMatches.Add_Click({
+    hide_group_matches
+    $lblGroupActionError.Visibility = "Collapsed"
+})
 $btnRemoveUserGroup.Add_Click({ remove_user_from_group })
 
 function get_apps {
