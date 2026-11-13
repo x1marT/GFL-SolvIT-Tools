@@ -963,7 +963,7 @@ $inputXML = @"
                                     <TextBox Grid.Row="0" Grid.Column="1" Name="txtT2Diff" Text="-" IsReadOnly="True" BorderThickness="0" Background="Transparent" FontWeight="SemiBold" HorizontalContentAlignment="Right"/>
 
                                     <TextBlock Grid.Row="2" Text="Timezone:" Foreground="#888" VerticalAlignment="Center"/>
-                                    <TextBox Grid.Row="2" Grid.Column="1" Name="txtT2Zone" Text="-" IsReadOnly="True" BorderThickness="0" Background="Transparent" HorizontalContentAlignment="Right"/>
+                                    <TextBox Grid.Row="2" Grid.Column="1" Name="txtT2Zone" Text="-" IsReadOnly="True" BorderThickness="0" Background="Transparent" HorizontalContentAlignment="Right" TextAlignment="Right" TextWrapping="Wrap"/>
 
                                     <TextBlock Grid.Row="4" Text="Current Time There:" Foreground="#888" VerticalAlignment="Center"/>
                                     <TextBox Grid.Row="4" Grid.Column="1" Name="txtT2Now" Text="-" IsReadOnly="True" BorderThickness="0" Background="Transparent" HorizontalContentAlignment="Right"/>
@@ -2937,21 +2937,23 @@ $listPrinterResults.Add_MouseDoubleClick({
 
 $global:T2Data = @{
     "Canada" = @{
-        "British Columbia" = @{ Group = "Tier 2 Service Support - CA Western & Central"; TzId = "Pacific Standard Time"; Abbr = "PST/PDT" }
-        "Manitoba"         = @{ Group = "Tier 2 Service Support - CA Western & Central"; TzId = "Central Standard Time"; Abbr = "CST/CDT" }
-        "Ontario"          = @{ Group = "Tier 2 Service Support - CA Corporate";         TzId = "Eastern Standard Time"; Abbr = "EST/EDT" }
-        "Quebec"           = @{ Group = "Tier 2 Service Support - CA Quebec";            TzId = "Eastern Standard Time"; Abbr = "EST/EDT" }
+        "Alberta"          = @{ Group = "Tier 2 Service Support - CA Western & Central"; TzId = "Mountain Standard Time";        Abbr = "MST/MDT" }
+        "British Columbia" = @{ Group = "Tier 2 Service Support - CA Western & Central"; TzId = "Pacific Standard Time";         Abbr = "PST/PDT"; Note = "Some eastern areas (e.g. Cranbrook) use Mountain Time" }
+        "Manitoba"         = @{ Group = "Tier 2 Service Support - CA Western & Central"; TzId = "Central Standard Time";         Abbr = "CST/CDT" }
+        "Saskatchewan"     = @{ Group = "Tier 2 Service Support - CA Western & Central"; TzId = "Canada Central Standard Time";  Abbr = "CST";     Note = "No daylight saving time all year" }
+        "Ontario"          = @{ Group = "Tier 2 Service Support - CA Corporate";         TzId = "Eastern Standard Time";         Abbr = "EST/EDT"; Note = "The far north-west (e.g. Kenora) uses Central Time" }
+        "Quebec"           = @{ Group = "Tier 2 Service Support - CA Atlantic";          TzId = "Eastern Standard Time";         Abbr = "EST/EDT"; Note = "The Magdalen Islands use Atlantic Time" }
     }
     "USA" = @{
         "Arkansas"       = @{ Group = "Tier 2 Service Support - US South";   TzId = "Central Standard Time"; Abbr = "CST/CDT" }
-        "Florida"        = @{ Group = "Tier 2 Service Support - US South";   TzId = "Eastern Standard Time"; Abbr = "EST/EDT" }
+        "Florida"        = @{ Group = "Tier 2 Service Support - US South";   TzId = "Eastern Standard Time"; Abbr = "EST/EDT"; Note = "The western panhandle (e.g. Pensacola) uses Central Time" }
         "Georgia"        = @{ Group = "Tier 2 Service Support - US Central"; TzId = "Eastern Standard Time"; Abbr = "EST/EDT" }
         "Illinois"       = @{ Group = "Tier 2 Service Support - US North";   TzId = "Central Standard Time"; Abbr = "CST/CDT" }
-        "Indiana"        = @{ Group = "Tier 2 Service Support - US North";   TzId = "Eastern Standard Time"; Abbr = "EST/EDT" }
-        "Kansas"         = @{ Group = "Tier 2 Service Support - US South";   TzId = "Central Standard Time"; Abbr = "CST/CDT" }
-        "Kentucky"       = @{ Group = "Tier 2 Service Support - US Central"; TzId = "Eastern Standard Time"; Abbr = "EST/EDT" }
+        "Indiana"        = @{ Group = "Tier 2 Service Support - US North";   TzId = "Eastern Standard Time"; Abbr = "EST/EDT"; Note = "Some north-west and south-west counties (e.g. Gary, Evansville) use Central Time" }
+        "Kansas"         = @{ Group = "Tier 2 Service Support - US South";   TzId = "Central Standard Time"; Abbr = "CST/CDT"; Note = "A few far western counties use Mountain Time" }
+        "Kentucky"       = @{ Group = "Tier 2 Service Support - US Central"; TzId = "Eastern Standard Time"; Abbr = "EST/EDT"; Note = "The western half (e.g. Bowling Green, Paducah) uses Central Time" }
         "Minnesota"      = @{ Group = "Tier 2 Service Support - US North";   TzId = "Central Standard Time"; Abbr = "CST/CDT" }
-        "Michigan"       = @{ Group = "Tier 2 Service Support - US North";   TzId = "Eastern Standard Time"; Abbr = "EST/EDT" }
+        "Michigan"       = @{ Group = "Tier 2 Service Support - US North";   TzId = "Eastern Standard Time"; Abbr = "EST/EDT"; Note = "Four Upper Peninsula counties (e.g. Iron Mountain) use Central Time" }
         "Missouri"       = @{ Group = "Tier 2 Service Support - US South";   TzId = "Central Standard Time"; Abbr = "CST/CDT" }
         "New York"       = @{ Group = "Tier 2 Service Support - US North";   TzId = "Eastern Standard Time"; Abbr = "EST/EDT" }
         "North Carolina" = @{ Group = "Tier 2 Service Support - US Central"; TzId = "Eastern Standard Time"; Abbr = "EST/EDT" }
@@ -2959,8 +2961,8 @@ $global:T2Data = @{
         "Oklahoma"       = @{ Group = "Tier 2 Service Support - US South";   TzId = "Central Standard Time"; Abbr = "CST/CDT" }
         "Pennsylvania"   = @{ Group = "Tier 2 Service Support - US North";   TzId = "Eastern Standard Time"; Abbr = "EST/EDT" }
         "South Carolina" = @{ Group = "Tier 2 Service Support - US Central"; TzId = "Eastern Standard Time"; Abbr = "EST/EDT" }
-        "Tennessee"      = @{ Group = "Tier 2 Service Support - US Central"; TzId = "Central Standard Time"; Abbr = "CST/CDT" }
-        "Texas"          = @{ Group = "Tier 2 Service Support - US South";   TzId = "Central Standard Time"; Abbr = "CST/CDT" }
+        "Tennessee"      = @{ Group = "Tier 2 Service Support - US Central"; TzId = "Central Standard Time"; Abbr = "CST/CDT"; Note = "East Tennessee (e.g. Knoxville, Chattanooga) uses Eastern Time" }
+        "Texas"          = @{ Group = "Tier 2 Service Support - US South";   TzId = "Central Standard Time"; Abbr = "CST/CDT"; Note = "The far west (e.g. El Paso) uses Mountain Time" }
         "Virginia"       = @{ Group = "Tier 2 Service Support - US Central"; TzId = "Eastern Standard Time"; Abbr = "EST/EDT" }
         "Wisconsin"      = @{ Group = "Tier 2 Service Support - US North";   TzId = "Central Standard Time"; Abbr = "CST/CDT" }
     }
@@ -3020,7 +3022,11 @@ function update_t2_panel {
 
     $txtT2Group.Text = $info.Group
     $txtT2Diff.Text  = "$sign h (vs $($ref.Name))"
-    $txtT2Zone.Text  = "$($info.Abbr) ($($info.TzId))"
+    $abbrParts = $info.Abbr -split "/"
+    $abbrNow   = if ($abbrParts.Count -gt 1 -and $tzDest.IsDaylightSavingTime($timeDest)) { $abbrParts[1] } else { $abbrParts[0] }
+    $zoneText  = "$abbrNow ($($info.TzId))"
+    if ($info.Note) { $zoneText += "`n$($info.Note)" }
+    $txtT2Zone.Text  = $zoneText
     $txtT2Now.Text   = $timeDest.ToString("yyyy-MM-dd HH:mm:ss")
 
     $lblT2StateClock.Text  = "$($cbT2State.SelectedItem) Time"
